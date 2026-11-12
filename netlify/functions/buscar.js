@@ -1,22 +1,21 @@
-exports.handler = async function (event) {
-  const inicio = Date.now();
+export default async (req) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Content-Type": "application/json; charset=utf-8"
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-cache"
   };
 
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
+  if (req.method === "OPTIONS") {
+    return new Response("", { status: 200, headers });
   }
 
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: "Método no permitido. Usa POST." })
-    };
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Método no permitido. Usa POST." }),
+      { status: 405, headers }
+    );
   }
 
   const apiKey = (process.env.GEMINI_API_KEY || "")
@@ -24,28 +23,49 @@ exports.handler = async function (event) {
     .trim();
 
   if (!apiKey) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
+    return new Response(
+      JSON.stringify({
         error: "La clave del buscador no está configurada en el servidor (GEMINI_API_KEY)."
-      })
-    };
+      }),
+      { status: 500, headers }
+    );
   }
 
+  let promptUsuario = "";
   try {
-    const body = JSON.parse(event.body || "{}");
-    const promptUsuario = (body.prompt || "").trim();
+    const body = await req.json();
+    promptUsuario = (body.prompt || "").trim();
+  } catch (e) {
+    return new Response(
+      JSON.stringify({ error: "No se pudo leer la búsqueda enviada." }),
+      { status: 400, headers }
+    );
+  }
 
-    if (!promptUsuario) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: "Escribe qué quieres buscar primero." })
-      };
-    }
+  if (!promptUsuario) {
+    return new Response(
+      JSON.stringify({ error: "Escribe qué quieres buscar primero." }),
+      { status: 400, headers }
+    );
+  }
 
-    const promptCompleto = `Eres docente de 2º de Primaria (7-8 años). Responde en español claro, educativo y seguro para niños sobre: "${promptUsuario}".
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      // Envía un espacio inicial al instante para evitar el corte de 10 segundos de Netlify
+      controller.enqueue(encoder.encode(" "));
+
+      const keepAlive = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(" "));
+        } catch (e) {
+          // Ignorar si la conexión ya finalizó
+        }
+      }, 2500);
+
+      try {
+        const promptCompleto = `Eres docente de 2º de Primaria (7-8 años). Responde en español claro, educativo y seguro para niños sobre: "${promptUsuario}".
 Devuelve SOLO un JSON válido con esta estructura:
 {
   "titulo": "Nombre claro del tema",
@@ -57,116 +77,113 @@ Devuelve SOLO un JSON válido con esta estructura:
 }
 Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vive o está). 3 curiosidades breves.`;
 
-    const llamarGemini = async (thinkingConfig) => {
-      const tiempoRestante = 9600 - (Date.now() - inicio);
-      if (tiempoRestante < 1500) {
-        return {
-          ok: false,
-          status: 504,
-          data: { error: { message: "Tiempo límite alcanzado en Netlify." } }
-        };
-      }
+        const llamarGemini = async (thinkingConfig) => {
+          const generationConfig = {
+            temperature: 0.4,
+            maxOutputTokens: 700,
+            responseMimeType: "application/json"
+          };
 
-      const generationConfig = {
-        temperature: 0.4,
-        maxOutputTokens: 600,
-        responseMimeType: "application/json"
-      };
-
-      if (thinkingConfig) {
-        generationConfig.thinkingConfig = thinkingConfig;
-      }
-
-      const payload = {
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: promptCompleto }]
+          if (thinkingConfig) {
+            generationConfig.thinkingConfig = thinkingConfig;
           }
-        ],
-        safetySettings: [
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
-          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
-          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
-        ],
-        generationConfig
-      };
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), tiempoRestante);
+          const payload = {
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: promptCompleto }]
+              }
+            ],
+            safetySettings: [
+              { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
+              { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
+              { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
+              { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
+            ],
+            generationConfig
+          };
 
-      try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        const data = await response.json();
-        return { ok: response.ok, status: response.status, data };
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const abortCtrl = new AbortController();
+          const timeoutId = setTimeout(() => abortCtrl.abort(), 24000);
+
+          try {
+            const response = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+              signal: abortCtrl.signal
+            });
+            clearTimeout(timeoutId);
+            const data = await response.json();
+            return { ok: response.ok, status: response.status, data };
+          } catch (err) {
+            clearTimeout(timeoutId);
+            return {
+              ok: false,
+              status: 504,
+              data: { error: { message: "Google tardó más de 24 segundos en responder." } }
+            };
+          }
+        };
+
+        let res = await llamarGemini({ thinkingLevel: "MINIMAL" });
+
+        if (!res.ok && res.status === 400) {
+          res = await llamarGemini({ thinkingLevel: "LOW" });
+        }
+
+        if (!res.ok && res.status === 400) {
+          res = await llamarGemini(null);
+        }
+
+        clearInterval(keepAlive);
+
+        if (res.ok) {
+          const candidato = res.data.candidates && res.data.candidates[0];
+          if (!candidato || candidato.finishReason === "SAFETY") {
+            controller.enqueue(
+              encoder.encode(
+                JSON.stringify({
+                  error: "Esa búsqueda no es adecuada para clase. ¡Prueba con otro animal, lugar o invento!"
+                })
+              )
+            );
+            controller.close();
+            return;
+          }
+
+          let texto = candidato.content?.parts?.[0]?.text || "";
+          texto = texto.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+
+          controller.enqueue(encoder.encode(JSON.stringify({ resultado: texto })));
+          controller.close();
+          return;
+        }
+
+        const mensajeError = res.data?.error?.message || `Error HTTP ${res.status}`;
+        controller.enqueue(
+          encoder.encode(
+            JSON.stringify({
+              error: `Google rechazó la consulta (${res.status}): ${mensajeError}`
+            })
+          )
+        );
+        controller.close();
       } catch (err) {
-        clearTimeout(timeoutId);
-        return {
-          ok: false,
-          status: 504,
-          data: { error: { message: "La respuesta superó los 9,6 segundos permitidos por Netlify." } }
-        };
+        clearInterval(keepAlive);
+        controller.enqueue(
+          encoder.encode(
+            JSON.stringify({
+              error: `Error interno en el servidor: ${err.message}`
+            })
+          )
+        );
+        controller.close();
       }
-    };
-
-    // 1. Modo ultrarrápido (sin tiempo extra de razonamiento)
-    let res = await llamarGemini({ thinkingLevel: "MINIMAL" });
-
-    // 2. Si ese nivel no aplica, prueba con nivel bajo
-    if (!res.ok && res.status === 400) {
-      res = await llamarGemini({ thinkingLevel: "LOW" });
     }
+  });
 
-    // 3. Si sigue dando 400 por el parámetro, envía sin thinkingConfig
-    if (!res.ok && res.status === 400) {
-      res = await llamarGemini(null);
-    }
-
-    if (res.ok) {
-      const candidato = res.data.candidates && res.data.candidates[0];
-      if (!candidato || candidato.finishReason === "SAFETY") {
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            error: "Esa búsqueda no es adecuada para clase. ¡Prueba con otro animal, lugar o invento!"
-          })
-        };
-      }
-
-      let texto = candidato.content?.parts?.[0]?.text || "";
-      texto = texto.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
-
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ resultado: texto })
-      };
-    }
-
-    const mensajeError = res.data?.error?.message || `Error HTTP ${res.status}`;
-    return {
-      statusCode: 502,
-      headers,
-      body: JSON.stringify({
-        error: `Google rechazó la consulta (${res.status}): ${mensajeError}`
-      })
-    };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: `Error interno en el servidor: ${err.message}`
-      })
-    };
-  }
+  return new Response(stream, { status: 200, headers });
 };
