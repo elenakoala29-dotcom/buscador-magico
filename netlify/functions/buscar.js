@@ -85,12 +85,15 @@ Reglas obligatorias:
       }
     };
 
+    const esClaveVertex = apiKey.startsWith("AQ.");
     const modelos = ["gemini-2.5-flash", "gemini-2.0-flash"];
     let ultimoError = "No se pudo conectar con Gemini.";
     let ultimoStatus = 502;
 
     for (const modelo of modelos) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const url = esClaveVertex
+        ? `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`
+        : `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
       const response = await fetch(url, {
         method: "POST",
@@ -125,7 +128,7 @@ Reglas obligatorias:
       ultimoStatus = response.status;
       ultimoError = data?.error?.message || `Error HTTP ${response.status}`;
 
-      if (response.status === 400 || response.status === 403) {
+      if (response.status === 400 || response.status === 401 || response.status === 403) {
         break;
       }
     }
