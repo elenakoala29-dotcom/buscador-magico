@@ -154,7 +154,6 @@ Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vi
             return;
           }
 
-          // Extrae únicamente las partes de respuesta final (ignorando bloques internos de pensamiento)
           const partes = candidato.content?.parts || [];
           let texto = partes
             .filter((p) => !p.thought && typeof p.text === "string")
@@ -176,7 +175,24 @@ Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vi
             return;
           }
 
-          controller.enqueue(encoder.encode(JSON.stringify({ resultado: texto })));
+          let objetoFicha = {};
+          try {
+            objetoFicha = JSON.parse(texto);
+          } catch (e) {
+            objetoFicha = { titulo: promptUsuario, oraciones: [texto] };
+          }
+
+          // Incluye la ficha directa y todos los nombres habituales para que index.html la lea sin fallos
+          const respuestaCompleta = {
+            ...objetoFicha,
+            resultado: texto,
+            respuesta: texto,
+            texto: texto,
+            result: texto,
+            contenido: texto
+          };
+
+          controller.enqueue(encoder.encode(JSON.stringify(respuestaCompleta)));
           controller.close();
           return;
         }
