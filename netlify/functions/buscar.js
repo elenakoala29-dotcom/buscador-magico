@@ -66,58 +66,78 @@ Reglas obligatorias:
 - El array "oraciones" debe tener entre 10 y 15 oraciones breves, fáciles de leer y comprender en 2º de Primaria.
 - Incluye características principales, dónde vive o dónde está, y datos interesantes.`;
 
-    const payload = {
-      systemInstruction: {
-        parts: [{ text: instruccionesSistema }]
-      },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: promptUsuario }]
-        }
-      ],
-      safetySettings: [
-        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
-        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
-        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
-      ],
-      generationConfig: {
+    const crearPayload = (usarThinkingZero) => {
+      const generationConfig = {
         temperature: 0.5,
+        maxOutputTokens: 1200,
         responseMimeType: "application/json"
+      };
+      if (usarThinkingZero) {
+        generationConfig.thinkingConfig = { thinkingBudget: 0 };
+      }
+      return {
+        systemInstruction: {
+          parts: [{ text: instruccionesSistema }]
+        },
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: promptUsuario }]
+          }
+        ],
+        safetySettings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
+          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
+          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
+        ],
+        generationConfig
+      };
+    };
+
+    const consultarModelo = async (versionApi, nombreModelo, usarThinkingZero) => {
+      const modeloLimpio = nombreModelo.replace(/^models\//, "");
+      const url = `https://generativelanguage.googleapis.com/${versionApi}/models/${modeloLimpio}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(crearPayload(usarThinkingZero)),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        const data = await response.json();
+        return { ok: response.ok, status: response.status, data };
+      } catch (err) {
+        clearTimeout(timeoutId);
+        return {
+          ok: false,
+          status: 504,
+          data: { error: { message: `Tiempo agotado con ${modeloLimpio}.` } }
+        };
       }
     };
 
-    const modelos = ["gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-2.5-flash"];
-    let ultimoError = "No se pudo conectar con Gemini.";
-    let ultimoStatus = 502;
+    const candidatosPrueba = [
+      { version: "v1beta", modelo: "gemini-3.8-flash", thinkingZero: true },
+      { version: "v1", modelo: "gemini-3.8-flash", thinkingZero: false }
+    ];
 
-    for (const modelo of modelos) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    let primerError = null;
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 9000);
+    for (const intento of candidatosPrueba) {
+      let res = await consultarModelo(intento.version, intento.modelo, intento.thinkingZero);
 
-      let response;
-      try {
-        response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-      } catch (fetchErr) {
-        clearTimeout(timeoutId);
-        ultimoStatus = 504;
-        ultimoError = "Google tardó demasiado en responder.";
-        continue;
+      if (!res.ok && res.status === 400 && intento.thinkingZero) {
+        res = await consultarModelo(intento.version, intento.modelo, false);
       }
-      clearTimeout(timeoutId);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        const candidato = data.candidates && data.candidates[0];
+      if (res.ok) {
+        const candidato = res.data.candidates && res.data.candidates[0];
         if (!candidato || candidato.finishReason === "SAFETY") {
           return {
             statusCode: 200,
@@ -138,11 +158,44 @@ Reglas obligatorias:
         };
       }
 
-      ultimoStatus = response.status;
-      ultimoError = data?.error?.message || `Error HTTP ${response.status}`;
+      if (!primerError) {
+        primerError = {
+          status: res.status,
+          mensaje: res.data?.error?.message || `Error HTTP ${res.status}`,
+          modelo: intento.modelo
+        };
+      }
+    }
 
-      if (response.status === 400 || response.status === 401 || response.status === 403) {
-        break;
+    if (primerError && primerError.status === 404) {
+      const listaRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`
+      );
+      if (listaRes.ok) {
+        const listaData = await listaRes.json();
+        const modelosDisponibles = (listaData.models || [])
+          .filter(
+            (m) =>
+              Array.isArray(m.supportedGenerationMethods) &&
+              m.supportedGenerationMethods.includes("generateContent") &&
+              /flash/i.test(m.name) &&
+              !/2\.0|2\.5|1\.5/.test(m.name)
+          )
+          .map((m) => m.name);
+
+        for (const nombreAuto of modelosDisponibles.slice(0, 2)) {
+          const resAuto = await consultarModelo("v1beta", nombreAuto, false);
+          if (resAuto.ok) {
+            const candidato = resAuto.data.candidates && resAuto.data.candidates[0];
+            let texto = candidato?.content?.parts?.[0]?.text || "";
+            texto = texto.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify({ resultado: texto })
+            };
+          }
+        }
       }
     }
 
@@ -150,7 +203,7 @@ Reglas obligatorias:
       statusCode: 502,
       headers,
       body: JSON.stringify({
-        error: `Google rechazó la consulta (${ultimoStatus}): ${ultimoError}`
+        error: `Google rechazó la consulta (${primerError.status} en ${primerError.modelo}): ${primerError.mensaje}`
       })
     };
   } catch (err) {
