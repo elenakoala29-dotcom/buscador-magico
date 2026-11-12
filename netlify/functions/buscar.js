@@ -18,7 +18,10 @@ exports.handler = async function (event) {
     };
   }
 
-  const apiKey = (process.env.GEMINI_API_KEY || "").trim();
+  const apiKey = (process.env.GEMINI_API_KEY || "")
+    .replace(/^["']|["']$/g, "")
+    .trim();
+
   if (!apiKey) {
     return {
       statusCode: 500,
@@ -63,43 +66,64 @@ Reglas obligatorias:
 - El array "oraciones" debe tener entre 10 y 15 oraciones breves, fáciles de leer y comprender en 2º de Primaria.
 - Incluye características principales, dónde vive o dónde está, y datos interesantes.`;
 
-    const payload = {
-      systemInstruction: {
-        parts: [{ text: instruccionesSistema }]
-      },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: promptUsuario }]
-        }
-      ],
-      safetySettings: [
-        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
-        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
-        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
-      ],
-      generationConfig: {
-        temperature: 0.5,
-        responseMimeType: "application/json"
-      }
-    };
+    const modelos = [
+      { nombre: "gemini-2.5-flash", sinPensamiento: true },
+      { nombre: "gemini-2.5-flash-lite", sinPensamiento: true },
+      { nombre: "gemini-2.0-flash", sinPensamiento: false }
+    ];
 
-    const esClaveVertex = apiKey.startsWith("AQ.");
-    const modelos = ["gemini-2.5-flash", "gemini-2.0-flash"];
     let ultimoError = "No se pudo conectar con Gemini.";
     let ultimoStatus = 502;
 
     for (const modelo of modelos) {
-      const url = esClaveVertex
-        ? `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`
-        : `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const generationConfig = {
+        temperature: 0.5,
+        responseMimeType: "application/json"
+      };
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      if (modelo.sinPensamiento) {
+        generationConfig.thinkingConfig = { thinkingBudget: 0 };
+      }
+
+      const payload = {
+        systemInstruction: {
+          parts: [{ text: instruccionesSistema }]
+        },
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: promptUsuario }]
+          }
+        ],
+        safetySettings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
+          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
+          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
+        ],
+        generationConfig
+      };
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo.nombre}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+      let response;
+      try {
+        response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+      } catch (fetchErr) {
+        clearTimeout(timeoutId);
+        ultimoStatus = 504;
+        ultimoError = "Google tardó demasiado en responder.";
+        continue;
+      }
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
