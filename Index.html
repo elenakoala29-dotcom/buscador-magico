@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Buscador Mágico 🌟 - 2º de Primaria</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka & Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0fdf4;
+            background-image: radial-gradient(#bbf7d0 2px, transparent 2px);
+            background-size: 28px 28px;
+        }
+
+        h1, h2, h3, .font-heading {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Animación suave flotante */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(0.8deg); }
+        }
+        .animate-float {
+            animation: floatSlow 4s infinite ease-in-out;
+        }
+
+        /* Animación de pulso para voz activa */
+        @keyframes pulseSpeaking {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); }
+            70% { transform: scale(1.04); box-shadow: 0 0 0 16px rgba(236, 72, 153, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+        }
+        .speaking-active {
+            animation: pulseSpeaking 1.5s infinite ease-in-out;
+        }
+
+        /* Continentes del mapa SVG */
+        .continent-path {
+            fill: #cbd5e1;
+            stroke: #ffffff;
+            stroke-width: 2.5;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .continent-path:hover {
+            fill: #94a3b8;
+        }
+        
+        .continent-path.highlighted {
+            fill: #fbbf24 !important;
+            stroke: #d97706 !important;
+            stroke-width: 3.5;
+            filter: drop-shadow(0px 4px 10px rgba(217, 119, 6, 0.6));
+        }
+
+        /* Utilidad para ocultar scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col items-center p-3 sm:p-6">
+
+    <!-- Encabezado de la Aplicación -->
+    <header class="w-full max-w-5xl text-center my-4 sm:my-6 animate-float">
+        <div class="inline-flex items-center gap-2 bg-yellow-300 text-yellow-900 px-4 py-1.5 rounded-full font-extrabold text-xs sm:text-base shadow-sm mb-3 border-2 border-yellow-400">
+            <span>🏫 Buscador Educativo para 2º de Primaria (7-8 años)</span>
+        </div>
+        <h1 class="text-4xl sm:text-6xl font-black text-emerald-600 tracking-wide drop-shadow-sm flex items-center justify-center gap-2 sm:gap-3">
+            <span>✨</span> Mi Buscador Mágico <span>✨</span>
+        </h1>
+        <p class="text-base sm:text-2xl text-emerald-800 font-bold mt-2 px-2">
+            ¡Busca cualquier tema y descubre su historia en lenguaje muy fácil con imágenes reales!
+        </p>
+    </header>
+
+    <!-- Caja de Búsqueda y Botones Rápidos -->
+    <section class="w-full max-w-3xl mb-8 flex flex-col items-center gap-4">
+        <!-- Input principal -->
+        <div class="w-full bg-white p-3 sm:p-4 rounded-3xl sm:rounded-full shadow-xl border-4 border-emerald-300 flex flex-col sm:flex-row gap-3">
+            <input type="text" id="searchInput" 
+                class="flex-1 text-lg sm:text-2xl px-5 py-3 sm:py-4 rounded-full border-2 border-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 font-bold text-slate-700 placeholder-slate-400"
+                placeholder="Escribe aquí lo que te ha dicho tu profe..."
+                onkeypress="handleKeyPress(event)"
+                autocomplete="off">
+            <button onclick="ejecutarBusqueda()" id="btnBuscar"
+                class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-lg sm:text-2xl font-black px-8 py-3 sm:py-4 rounded-full shadow-lg border-b-4 border-emerald-700 transition flex items-center justify-center gap-2 cursor-pointer">
+                <span>🔍</span> ¡Buscar!
+            </button>
+        </div>
+
+        <!-- Sugerencias de Búsqueda Rápida -->
+        <div class="w-full flex items-center justify-center gap-2 flex-wrap text-sm sm:text-base font-bold text-slate-600">
+            <span class="text-emerald-800 font-extrabold">Ejemplos rápidos:</span>
+            <button onclick="buscarSugerencia('El León')" class="bg-white hover:bg-amber-100 text-amber-800 border-2 border-amber-300 px-3 py-1 rounded-full shadow-sm transition">🦁 El León</button>
+            <button onclick="buscarSugerencia('Egipto y las Pirámides')" class="bg-white hover:bg-orange-100 text-orange-800 border-2 border-orange-300 px-3 py-1 rounded-full shadow-sm transition">🐪 Pirámides</button>
+            <button onclick="buscarSugerencia('El Amazonas')" class="bg-white hover:bg-emerald-100 text-emerald-800 border-2 border-emerald-300 px-3 py-1 rounded-full shadow-sm transition">🌳 Amazonas</button>
+            <button onclick="buscarSugerencia('La Torre Eiffel')" class="bg-white hover:bg-blue-100 text-blue-800 border-2 border-blue-300 px-3 py-1 rounded-full shadow-sm transition">🗼 Torre Eiffel</button>
+            <button onclick="buscarSugerencia('El Canguro')" class="bg-white hover:bg-rose-100 text-rose-800 border-2 border-rose-300 px-3 py-1 rounded-full shadow-sm transition">🦘 Canguro</button>
+            <button onclick="buscarSugerencia('Los Planetas')" class="bg-white hover:bg-purple-100 text-purple-800 border-2 border-purple-300 px-3 py-1 rounded-full shadow-sm transition">🪐 Planetas</button>
+        </div>
+    </section>
+
+    <!-- Estado de Carga Animado -->
+    <div id="loadingBox" class="hidden flex-col items-center justify-center py-12 my-4">
+        <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center text-4xl animate-spin border-4 border-emerald-400 mb-4 shadow-inner">
+            🔍
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-emerald-700 text-center font-heading">
+            Buscando en Internet la mejor información... 🌐✨
+        </h2>
+        <p class="text-base sm:text-lg text-emerald-600 font-bold mt-1 text-center">Consultando de forma segura, seleccionando fotos reales y redactando texto fácil...</p>
+    </div>
+
+    <!-- Estado de Error -->
+    <div id="errorBox" class="hidden bg-rose-100 border-4 border-rose-300 p-6 rounded-3xl max-w-xl text-center shadow-lg my-6">
+        <div class="text-5xl mb-2">🙈</div>
+        <h3 class="text-2xl font-bold text-rose-800 font-heading" id="errorMessage">¡Uy! No pudimos encontrar esa información.</h3>
+        <p class="text-lg text-rose-700 mt-2 font-semibold" id="errorSubMessage">Revisa cómo has escrito la palabra o prueba con uno de los botones de sugerencias.</p>
+    </div>
+
+    <!-- Panel de Resultados -->
+    <main id="resultsPanel" class="hidden w-full max-w-5xl flex flex-col gap-8 mb-12">
+        
+        <!-- Fila Superior: Fotografía Real Multi-Web + Mapa Mundi Vectorial -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+            
+            <!-- Tarjeta 1: Foto Real desde Fuentes Diversas -->
+            <div class="md:col-span-5 bg-white rounded-3xl p-4 shadow-xl border-4 border-purple-200 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <span class="bg-purple-100 text-purple-800 font-extrabold px-3.5 py-1 rounded-full text-xs sm:text-sm flex items-center gap-1.5 border border-purple-300">
+                        <span>📸</span> Foto Real Multi-Web
+                    </span>
+                    <span id="imageSourceBadge" class="text-xs font-extrabold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">Wikimedia / Web</span>
+                </div>
+                <div class="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-slate-100 border-2 border-slate-100 flex items-center justify-center shadow-inner">
+                    <img id="mainImage" src="" alt="Imagen real" 
+                        onerror="manejarErrorImagen(this);"
+                        class="w-full h-full object-cover rounded-2xl transition transform hover:scale-105 duration-300">
+                </div>
+                <p id="imageCaption" class="text-center font-bold text-slate-500 text-xs sm:text-sm mt-3 italic"></p>
+            </div>
+
+            <!-- Tarjeta 2: Localización y Mapa Mundi de Continentes -->
+            <div class="md:col-span-7 bg-white rounded-3xl p-5 shadow-xl border-4 border-sky-200 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-2xl font-black text-sky-700 flex items-center gap-2 font-heading">
+                            <span>🗺️</span> ¿Dónde se ubica en el mundo?
+                        </h3>
+                        <span id="continentBadge" class="bg-amber-100 text-amber-900 font-black px-4 py-1 rounded-full text-sm uppercase tracking-wide border-2 border-amber-300">
+                            Continente
+                        </span>
+                    </div>
+                    
+                    <p id="locationText" class="text-lg sm:text-xl font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <span>📍</span> País / Origen: <span id="countrySpan" class="text-sky-600 font-extrabold"></span>
+                    </p>
+                </div>
+
+                <!-- Mapa Mundi SVG Ilustrativo -->
+                <div class="bg-sky-50 rounded-2xl p-3 border-2 border-sky-100 relative">
+                    <svg viewBox="0 0 1000 500" class="w-full h-auto drop-shadow-sm" id="worldMapSvg">
+                        <!-- América del Norte -->
+                        <path id="map-america-norte" class="continent-path" d="M120,60 Q180,40 280,60 Q340,110 260,180 Q200,240 180,260 Q140,230 100,160 Q80,100 120,60 Z" />
+                        <!-- América del Sur -->
+                        <path id="map-america-sur" class="continent-path" d="M220,270 Q310,290 330,360 Q310,460 250,470 Q200,430 200,340 Z" />
+                        <!-- Europa -->
+                        <path id="map-europa" class="continent-path" d="M440,60 Q540,50 600,100 Q560,170 480,170 Q430,130 440,60 Z" />
+                        <!-- África -->
+                        <path id="map-africa" class="continent-path" d="M430,185 Q570,180 580,290 Q540,410 460,400 Q410,310 430,185 Z" />
+                        <!-- Asia -->
+                        <path id="map-asia" class="continent-path" d="M605,60 Q850,50 920,160 Q850,280 670,260 Q570,220 605,60 Z" />
+                        <!-- Oceanía -->
+                        <path id="map-oceania" class="continent-path" d="M760,310 Q880,300 910,380 Q840,450 760,410 Q730,360 760,310 Z" />
+                        <!-- Antártida -->
+                        <path id="map-antartida" class="continent-path" d="M150,485 Q500,475 880,485 Q500,500 150,485 Z" />
+                    </svg>
+
+                    <!-- Leyenda interactiva abajo del mapa -->
+                    <div class="flex flex-wrap justify-center items-center gap-3 mt-2 text-xs sm:text-sm font-bold text-slate-600">
+                        <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-amber-600 inline-block"></span> Continente Resaltado</span>
+                        <span class="text-slate-400">|</span>
+                        <span id="globalNotice" class="text-sky-700 font-extrabold hidden">🌍 Presente en todo el planeta / Espacio</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila Media: Explicación de 10 a 15 Oraciones + Asistente por Voz -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-emerald-200 relative">
+            
+            <!-- Encabezado con título y Botón de Voz -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
+                <div>
+                    <h2 id="resultTitle" class="text-3xl sm:text-5xl font-black text-emerald-700 capitalize font-heading">
+                        Título del tema
+                    </h2>
+                    <p class="text-slate-500 font-bold text-sm sm:text-base mt-1">Explicación resumida en lenguaje muy sencillo (de 10 a 15 oraciones)</p>
+                </div>
+                
+                <!-- Botón TTS accesibilidad -->
+                <button onclick="toggleLecturaVoz()" id="btnAudioTTS" 
+                    class="bg-pink-500 hover:bg-pink-600 active:scale-95 text-white font-extrabold px-6 py-3.5 rounded-full shadow-lg border-b-4 border-pink-700 transition flex items-center justify-center gap-3 text-lg sm:text-xl cursor-pointer self-start sm:self-auto shrink-0">
+                    <span id="audioIcon" class="text-2xl">🔊</span>
+                    <span id="audioText">¡Escuchar!</span>
+                </button>
+            </div>
+
+            <!-- Etiquetas de resumen -->
+            <div id="featuresContainer" class="flex flex-wrap gap-2 mb-6"></div>
+
+            <!-- Bloque de Oraciones Numeradas -->
+            <div class="bg-emerald-50/80 rounded-2xl p-5 sm:p-6 border-2 border-emerald-200">
+                <ol id="sentencesList" class="space-y-3.5 text-base sm:text-xl text-slate-800 font-bold leading-relaxed list-decimal list-inside">
+                    <!-- Oraciones dinámicas generadas de 10 a 15 -->
+                </ol>
+            </div>
+        </div>
+
+        <!-- Fila Inferior 1: Curiosidades "¿Sabías que...?" -->
+        <div class="bg-gradient-to-r from-amber-100 via-orange-100 to-amber-100 rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-amber-300">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-amber-400 text-white rounded-2xl flex items-center justify-center text-3xl shadow-md">
+                    💡
+                </div>
+                <div>
+                    <h3 class="text-3xl sm:text-4xl font-black text-amber-900 font-heading">
+                        ¿Sabías que...?
+                    </h3>
+                    <p class="text-amber-800 font-bold text-sm sm:text-base">Datos curiosos para compartir con la clase</p>
+                </div>
+            </div>
+
+            <div id="curiositiesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Tarjetas de datos curiosos -->
+            </div>
+        </div>
+
+        <!-- Fila Inferior 2: Fuentes y webs de consulta para saber más -->
+        <div class="bg-sky-50 rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-sky-300">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-sky-500 text-white rounded-2xl flex items-center justify-center text-3xl shadow-md">
+                    🌐
+                </div>
+                <div>
+                    <h3 class="text-2xl sm:text-3xl font-black text-sky-900 font-heading">
+                        Fuentes y webs para saber más
+                    </h3>
+                    <p class="text-sky-800 font-bold text-sm sm:text-base">Enlaces recomendados a páginas infantiles seguras y educativas</p>
+                </div>
+            </div>
+
+            <div id="webSourcesGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- Tarjetas de webs recomendadas -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Pie de página educativo -->
+    <footer class="mt-auto py-6 text-center text-emerald-800 font-bold text-xs sm:text-sm">
+        <p>🏫 Desarrollado para Educación Primaria • Información adaptada, entorno seguro y lectura por voz integrada</p>
+    </footer>
+
+    <!-- LÓGICA JAVASCRIPT -->
+    <script>
+        // Definición global de emergencia para la gestión de errores de imagen
+        function manejarErrorImagen(imgElement) {
+            if (!imgElement) return;
+            imgElement.onerror = null; // Evita bucle infinito
+            imgElement.src = 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80';
+            const badge = document.getElementById('imageSourceBadge');
+            if (badge) badge.textContent = 'Fotografía Educativa';
+        }
+        window.manejarErrorImagen = manejarErrorImagen;
+
+        // Endpoint seguro de Netlify Functions (oculta la clave API de Gemini en el servidor)
+        const netlifyFunctionUrl = '/.netlify/functions/buscar';
+
+        // Variables de Estado
+        let currentResultData = null;
+        let isSpeaking = false;
+        let speechUtterance = null;
+
+        // Mapeo de Continentes a IDs SVG
+        const continentSvgMap = {
+            "américa del norte": "map-america-norte",
+            "america del norte": "map-america-norte",
+            "norteamérica": "map-america-norte",
+            "norteamerica": "map-america-norte",
+            
+            "américa del sur": "map-america-sur",
+            "america del sur": "map-america-sur",
+            "sudamérica": "map-america-sur",
+            "sudamerica": "map-america-sur",
+
+            "europa": "map-europa",
+            
+            "áfrica": "map-africa",
+            "africa": "map-africa",
+
+            "asia": "map-asia",
+
+            "oceanía": "map-oceania",
+            "oceania": "map-oceania",
+
+            "antártida": "map-antartida",
+            "antartida": "map-antartida"
+        };
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                ejecutarBusqueda();
+            }
+        }
+
+        function buscarSugerencia(termino) {
+            document.getElementById('searchInput').value = termino;
+            ejecutarBusqueda();
+        }
+
+        // Ejecución de la búsqueda principal a través de Netlify Functions
+        async function ejecutarBusqueda() {
+            const queryInput = document.getElementById('searchInput');
+            const query = queryInput.value.trim();
+
+            if (!query) {
+                queryInput.focus();
+                return;
+            }
+
+            // Detener lectura de voz activa
+            detenerVoz();
+
+            // Interfaz: Mostrar cargando
+            document.getElementById('resultsPanel').classList.add('hidden');
+            document.getElementById('errorBox').classList.add('hidden');
+            document.getElementById('loadingBox').classList.replace('hidden', 'flex');
+
+            try {
+                // 1. Llamada POST a /.netlify/functions/buscar enviando { prompt }
+                const dataIA = await consultarServidorNetlify(query);
+                currentResultData = dataIA;
+
+                // 2. Búsqueda Multi-Web de Imágenes
+                const imageData = await buscarImagenMultifuente(dataIA.busquedaImagen || query, query);
+
+                // 3. Renderizar resultados completados
+                renderizarResultados(query, dataIA, imageData);
+
+            } catch (error) {
+                console.error("Error al buscar:", error);
+                document.getElementById('loadingBox').classList.replace('flex', 'hidden');
+                document.getElementById('errorMessage').textContent = "¡Uy! No pudimos procesar la búsqueda en este momento.";
+                document.getElementById('errorSubMessage').textContent = error.message || "Comprueba tu conexión o inténtalo de nuevo en unos segundos.";
+                document.getElementById('errorBox').classList.remove('hidden');
+            }
+        }
+
+        // Petición POST a /.netlify/functions/buscar y procesamiento del campo "resultado"
+        async function consultarServidorNetlify(query) {
+            const res = await fetch(netlifyFunctionUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: query })
+            });
+
+            const payload = await res.json();
+
+            if (!res.ok) {
+                throw new Error(payload.error || `Error del servidor (${res.status})`);
+            }
+
+            // Extraer el campo 'resultado' devuelto por la función de Netlify
+            const resultado = payload.resultado;
+
+            if (!resultado) {
+                throw new Error("La función de búsqueda no devolvió ningún resultado.");
+            }
+
+            // Si resultado ya es un objeto JSON estructurado, lo devolvemos directamente
+            if (typeof resultado === 'object') {
+                return resultado;
+            }
+
+            // Si resultado es una cadena de texto, intentamos parsearla como JSON o adaptarla
+            try {
+                const cleanJsonText = String(resultado).replace(/```json/gi, '').replace(/```/g, '').trim();
+                return JSON.parse(cleanJsonText);
+            } catch (parseErr) {
+                // Fallback si el servidor devolviera texto plano en 'resultado'
+                const oracionesTexto = String(resultado)
+                    .split(/(?<=[.!?])\s+/)
+                    .map(s => s.trim())
+                    .filter(Boolean);
+
+                return {
+                    titulo: query,
+                    pais: "Consulta Educativa",
+                    continente: "Global / Espacio",
+                    oraciones: oracionesTexto.length > 0 ? oracionesTexto : [String(resultado)],
+                    caracteristicas: ["2º de Primaria", "Lectura Fácil"],
+                    curiosidades: ["¡Sigue explorando temas nuevos cada día con tu clase!"],
+                    busquedaImagen: query,
+                    websRecomendadas: [
+                        {
+                            nombre: "Vikidia - Enciclopedia Escolar",
+                            descripcion: "Enciclopedia libre para niños de primaria",
+                            url: "https://es.vikidia.org"
+                        },
+                        {
+                            nombre: "National Geographic Kids",
+                            descripcion: "Artículos con fotos de la naturaleza y animales",
+                            url: "https://kids.nationalgeographic.com"
+                        },
+                        {
+                            nombre: "Wikimedia Commons",
+                            descripcion: "Imágenes y archivos educativos libres",
+                            url: "https://commons.wikimedia.org"
+                        }
+                    ]
+                };
+            }
+        }
+
+        // Función de búsqueda de imágenes multi-web ultra-robusta
+        async function buscarImagenMultifuente(busquedaTermino, queryOriginal) {
+            const cleanTerm = (queryOriginal || "").replace(/[^\w\sáéíóúÁÉÍÓÚñÑ]/g, '').trim();
+            const searchTerms = [
+                busquedaTermino,
+                cleanTerm,
+                queryOriginal
+            ].filter(Boolean);
+
+            // Nivel 1: Wikipedia en Español
+            for (const term of searchTerms) {
+                try {
+                    const wikiEsUrl = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(term)}&gsrlimit=3&prop=pageimages&pithumbsize=800&format=json&origin=*`;
+                    const res = await fetch(wikiEsUrl);
+                    const data = await res.json();
+                    if (data.query && data.query.pages) {
+                        const pages = Object.values(data.query.pages);
+                        pages.sort((a, b) => (a.index || 0) - (b.index || 0));
+                        for (const page of pages) {
+                            if (page.thumbnail && page.thumbnail.source) {
+                                return { url: page.thumbnail.source, fuente: 'Wikipedia en Español' };
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Nivel 1 (Wiki ES) falló:", e);
+                }
+            }
+
+            // Nivel 2: Wikipedia en Inglés
+            for (const term of searchTerms) {
+                try {
+                    const wikiEnUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(term)}&gsrlimit=3&prop=pageimages&pithumbsize=800&format=json&origin=*`;
+                    const res = await fetch(wikiEnUrl);
+                    const data = await res.json();
+                    if (data.query && data.query.pages) {
+                        const pages = Object.values(data.query.pages);
+                        for (const page of pages) {
+                            if (page.thumbnail && page.thumbnail.source) {
+                                return { url: page.thumbnail.source, fuente: 'Wikipedia Global' };
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Nivel 2 (Wiki EN) falló:", e);
+                }
+            }
+
+            // Nivel 3: Repositorio Libre Wikimedia Commons API
+            for (const term of searchTerms) {
+                try {
+                    const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(term)}&gsrnamespace=6&prop=imageinfo&iiprop=url|mime&format=json&origin=*&gsrlimit=5`;
+                    const res = await fetch(commonsUrl);
+                    const data = await res.json();
+                    if (data.query && data.query.pages) {
+                        const pages = Object.values(data.query.pages);
+                        for (const page of pages) {
+                            if (page.imageinfo && page.imageinfo[0]) {
+                                const info = page.imageinfo[0];
+                                if (info.mime && (info.mime.includes('jpeg') || info.mime.includes('png') || info.mime.includes('webp'))) {
+                                    return { url: info.url, fuente: 'Wikimedia Commons' };
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Nivel 3 (Commons) falló:", e);
+                }
+            }
+
+            // Nivel 4: Fallback Dinámico con Unsplash
+            return {
+                url: `https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80`,
+                fuente: 'Fotografía Educativa'
+            };
+        }
+
+        // Renderizar los datos devueltos en la interfaz
+        function renderizarResultados(queryOriginal, data, imageData) {
+            document.getElementById('loadingBox').classList.replace('flex', 'hidden');
+
+            // 1. Título e Imagen
+            document.getElementById('resultTitle').textContent = data.titulo || queryOriginal;
+            const imgEl = document.getElementById('mainImage');
+            imgEl.src = imageData.url;
+            document.getElementById('imageSourceBadge').textContent = imageData.fuente;
+            document.getElementById('imageCaption').textContent = `Fotografía real del tema ("${data.titulo || queryOriginal}")`;
+
+            // 2. Ubicación y Continente
+            document.getElementById('countrySpan').textContent = data.pais || "Múltiples países";
+            document.getElementById('continentBadge').textContent = data.continente || "Global";
+            
+            resaltarContinenteEnMapa(data.continente);
+
+            // 3. Etiquetas de Características
+            const featuresContainer = document.getElementById('featuresContainer');
+            featuresContainer.innerHTML = '';
+            if (data.caracteristicas && Array.isArray(data.caracteristicas)) {
+                data.caracteristicas.forEach(feat => {
+                    const badge = document.createElement('span');
+                    badge.className = "bg-emerald-100 text-emerald-900 font-extrabold px-3.5 py-1 rounded-full text-xs sm:text-sm border border-emerald-300 shadow-sm";
+                    badge.textContent = `⭐ ${feat}`;
+                    featuresContainer.appendChild(badge);
+                });
+            }
+
+            // 4. Oraciones Numeradas (10 a 15)
+            const sentencesList = document.getElementById('sentencesList');
+            sentencesList.innerHTML = '';
+            const listaOraciones = data.oraciones || data.descripcion_oraciones || [];
+            listaOraciones.forEach(oracion => {
+                const li = document.createElement('li');
+                li.className = "pl-2";
+                li.textContent = oracion;
+                sentencesList.appendChild(li);
+            });
+
+            // 5. Curiosidades "¿Sabías que...?"
+            const curiositiesGrid = document.getElementById('curiositiesGrid');
+            curiositiesGrid.innerHTML = '';
+            const emojis = ['🎈', '🚀', '🎨', '🦖', '🌟', '🧩'];
+
+            if (data.curiosidades && Array.isArray(data.curiosidades)) {
+                data.curiosidades.forEach((curio, i) => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white/90 backdrop-blur p-4 rounded-2xl border-2 border-amber-200 shadow-sm flex items-start gap-3";
+                    card.innerHTML = `
+                        <span class="text-2xl sm:text-3xl bg-amber-100 p-2 rounded-xl shrink-0">${emojis[i % emojis.length]}</span>
+                        <p class="text-sm sm:text-base font-bold text-slate-800 leading-snug">${curio}</p>
+                    `;
+                    curiositiesGrid.appendChild(card);
+                });
+            }
+
+            // 6. Fuentes y Webs Recomendadas
+            const webSourcesGrid = document.getElementById('webSourcesGrid');
+            webSourcesGrid.innerHTML = '';
+            const webs = data.websRecomendadas || [
+                { nombre: "Vikidia Niños", descripcion: "Enciclopedia educativa para primaria", url: "https://es.vikidia.org" },
+                { nombre: "National Geographic Kids", descripcion: "Ciencia, animales y geografía", url: "https://kids.nationalgeographic.com" },
+                { nombre: "Wikimedia Commons", descripcion: "Archivos e imágenes libres", url: "https://commons.wikimedia.org" }
+            ];
+
+            webs.forEach(w => {
+                const card = document.createElement('a');
+                card.href = w.url;
+                card.target = "_blank";
+                card.rel = "noopener noreferrer";
+                card.className = "bg-white p-4 rounded-2xl border-2 border-sky-200 hover:border-sky-400 hover:shadow-md transition flex flex-col justify-between group";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-black text-sky-800 text-base group-hover:text-sky-600 transition font-heading">${w.nombre}</h4>
+                            <span class="text-xs text-sky-500 font-extrabold">🔗 Abrir</span>
+                        </div>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-600">${w.descripcion}</p>
+                    </div>
+                `;
+                webSourcesGrid.appendChild(card);
+            });
+
+            // Mostrar Panel
+            document.getElementById('resultsPanel').classList.remove('hidden');
+        }
+
+        // Iluminación del mapa mundial SVG
+        function resaltarContinenteEnMapa(nombreContinente) {
+            const globalNotice = document.getElementById('globalNotice');
+            globalNotice.classList.add('hidden');
+
+            document.querySelectorAll('.continent-path').forEach(path => {
+                path.classList.remove('highlighted');
+            });
+
+            if (!nombreContinente) return;
+
+            const contClean = nombreContinente.toLowerCase().trim();
+            const pathId = continentSvgMap[contClean];
+
+            if (pathId) {
+                const el = document.getElementById(pathId);
+                if (el) el.classList.add('highlighted');
+            } else {
+                // Si abarca varios continentes o es global/espacio
+                document.querySelectorAll('.continent-path').forEach(p => p.classList.add('highlighted'));
+                globalNotice.classList.remove('hidden');
+            }
+        }
+
+        // ACCESIBILIDAD LECTURA POR VOZ (Web Speech API)
+        function toggleLecturaVoz() {
+            if (!('speechSynthesis' in window)) {
+                const textEl = document.getElementById('audioText');
+                if (textEl) textEl.textContent = 'Voz no disponible';
+                return;
+            }
+
+            if (isSpeaking) {
+                detenerVoz();
+            } else {
+                iniciarVoz();
+            }
+        }
+
+        function iniciarVoz() {
+            if (!currentResultData) return;
+
+            window.speechSynthesis.cancel();
+
+            let texto = `${currentResultData.titulo}. `;
+            texto += `Se ubica en ${currentResultData.pais}, en ${currentResultData.continente}. `;
+
+            const lista = currentResultData.oraciones || currentResultData.descripcion_oraciones || [];
+            texto += lista.join(" ");
+
+            if (currentResultData.curiosidades) {
+                texto += " Datos curiosos. " + currentResultData.curiosidades.join(". ");
+            }
+
+            speechUtterance = new SpeechSynthesisUtterance(texto);
+            speechUtterance.lang = 'es-ES';
+            speechUtterance.rate = 0.85; // Velocidad adaptada para niños
+            speechUtterance.pitch = 1.05;
+
+            const btn = document.getElementById('btnAudioTTS');
+            const icon = document.getElementById('audioIcon');
+            const text = document.getElementById('audioText');
+
+            speechUtterance.onstart = () => {
+                isSpeaking = true;
+                btn.classList.add('speaking-active', 'bg-rose-600');
+                btn.classList.remove('bg-pink-500');
+                icon.textContent = '🛑';
+                text.textContent = 'Detener Lectura';
+            };
+
+            speechUtterance.onend = () => { detenerVoz(); };
+            speechUtterance.onerror = () => { detenerVoz(); };
+
+            window.speechSynthesis.speak(speechUtterance);
+        }
+
+        function detenerVoz() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            isSpeaking = false;
+            const btn = document.getElementById('btnAudioTTS');
+            const icon = document.getElementById('audioIcon');
+            const text = document.getElementById('audioText');
+
+            if (btn && icon && text) {
+                btn.classList.remove('speaking-active', 'bg-rose-600');
+                btn.classList.add('bg-pink-500');
+                icon.textContent = '🔊';
+                text.textContent = '¡Escuchar!';
+            }
+        }
+    </script>
+</body>
+</html>
