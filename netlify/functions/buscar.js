@@ -45,49 +45,43 @@ exports.handler = async function (event) {
       };
     }
 
-    const instruccionesSistema = `Eres docente de 2º de Primaria (niños de 7-8 años). Responde en español claro, educativo y seguro para niños.
-Devuelve SOLO un JSON válido con esta estructura exacta:
+    const promptCompleto = `Eres docente de 2º de Primaria (7-8 años). Responde en español claro, educativo y seguro para niños sobre: "${promptUsuario}".
+Devuelve SOLO un JSON válido con esta estructura:
 {
-  "titulo": "Nombre del tema",
-  "oraciones": ["Oración 1 corta.", "Oración 2..."],
+  "titulo": "Nombre claro del tema",
+  "oraciones": ["Oración 1 muy breve.", "Oración 2..."],
   "continente": "África | América | Asia | Europa | Oceanía | Antártida | Todo el mundo",
   "pais": "País o países principales (o 'Todo el planeta')",
-  "curiosidades": ["Curiosidad 1.", "Curiosidad 2.", "Curiosidad 3."],
+  "curiosidades": ["Curiosidad 1 corta.", "Curiosidad 2 corta.", "Curiosidad 3 corta."],
   "busqueda_imagen": "término corto para foto real"
 }
-Reglas:
-- "oraciones": 8 a 10 oraciones cortas y fáciles de leer (características, hábitat y datos clave).
-- "curiosidades": 3 datos sorprendentes y breves.`;
+Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vive o está). 3 curiosidades breves.`;
 
-    const consultarGemini = async (modelo, thinkingLevel) => {
-      const tiempoRestante = 9200 - (Date.now() - inicio);
-      if (tiempoRestante < 1800) {
+    const llamarGemini = async (thinkingConfig) => {
+      const tiempoRestante = 9600 - (Date.now() - inicio);
+      if (tiempoRestante < 1500) {
         return {
           ok: false,
           status: 504,
-          data: { error: { message: "Tiempo límite alcanzado en el servidor." } }
+          data: { error: { message: "Tiempo límite alcanzado en Netlify." } }
         };
       }
 
-      const modeloLimpio = modelo.replace(/^models\//, "");
       const generationConfig = {
         temperature: 0.4,
-        maxOutputTokens: 850,
+        maxOutputTokens: 600,
         responseMimeType: "application/json"
       };
 
-      if (thinkingLevel) {
-        generationConfig.thinkingConfig = { thinkingLevel };
+      if (thinkingConfig) {
+        generationConfig.thinkingConfig = thinkingConfig;
       }
 
       const payload = {
-        systemInstruction: {
-          parts: [{ text: instruccionesSistema }]
-        },
         contents: [
           {
             role: "user",
-            parts: [{ text: promptUsuario }]
+            parts: [{ text: promptCompleto }]
           }
         ],
         safetySettings: [
@@ -99,7 +93,7 @@ Reglas:
         generationConfig
       };
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modeloLimpio}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), tiempoRestante);
 
@@ -111,68 +105,29 @@ Reglas:
           signal: controller.signal
         });
         clearTimeout(timeoutId);
-        const rawText = await response.text();
-        let data = {};
-        try {
-          data = JSON.parse(rawText);
-        } catch (e) {
-          data = { error: { message: `Respuesta inesperada de Google (HTTP ${response.status}).` } };
-        }
+        const data = await response.json();
         return { ok: response.ok, status: response.status, data };
       } catch (err) {
         clearTimeout(timeoutId);
         return {
           ok: false,
           status: 504,
-          data: { error: { message: `Google tardó demasiado en responder (${modeloLimpio}).` } }
+          data: { error: { message: "La respuesta superó los 9,6 segundos permitidos por Netlify." } }
         };
       }
     };
 
-    // 1. Llamada rápida a gemini-3.8-flash con razonamiento mínimo
-    let res = await consultarGemini("gemini-3.8-flash", "minimal");
+    // 1. Modo ultrarrápido (sin tiempo extra de razonamiento)
+    let res = await llamarGemini({ thinkingLevel: "MINIMAL" });
 
-    // 2. Si "minimal" no aplica, prueba con "low"
+    // 2. Si ese nivel no aplica, prueba con nivel bajo
     if (!res.ok && res.status === 400) {
-      res = await consultarGemini("gemini-3.8-flash", "low");
+      res = await llamarGemini({ thinkingLevel: "LOW" });
     }
 
-    // 3. Si hubo saturación puntual (503), espera medio segundo y reintenta el mismo modelo
-    if (!res.ok && res.status === 503 && Date.now() - inicio < 5500) {
-      await new Promise((r) => setTimeout(r, 500));
-      res = await consultarGemini("gemini-3.8-flash", "minimal");
-    }
-
-    const errorPrincipal = {
-      status: res.status,
-      mensaje: res.data?.error?.message || `Error HTTP ${res.status}`
-    };
-
-    // 4. Si sigue fallando por modelo no encontrado o saturado, busca automáticamente un modelo Flash activo en tu cuenta
-    if (!res.ok && (res.status === 404 || res.status === 503) && Date.now() - inicio < 6000) {
-      try {
-        const listaRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`
-        );
-        if (listaRes.ok) {
-          const listaData = await listaRes.json();
-          const alternativo = (listaData.models || []).find(
-            (m) =>
-              Array.isArray(m.supportedGenerationMethods) &&
-              m.supportedGenerationMethods.includes("generateContent") &&
-              /flash/i.test(m.name) &&
-              !/gemini-3\.8-flash$|1\.5|2\.0|2\.5/.test(m.name)
-          );
-          if (alternativo) {
-            const resAlt = await consultarGemini(alternativo.name, "minimal");
-            if (resAlt.ok) {
-              res = resAlt;
-            }
-          }
-        }
-      } catch (e) {
-        // Mantiene el errorPrincipal si falla el listado
-      }
+    // 3. Si sigue dando 400 por el parámetro, envía sin thinkingConfig
+    if (!res.ok && res.status === 400) {
+      res = await llamarGemini(null);
     }
 
     if (res.ok) {
@@ -197,11 +152,12 @@ Reglas:
       };
     }
 
+    const mensajeError = res.data?.error?.message || `Error HTTP ${res.status}`;
     return {
       statusCode: 502,
       headers,
       body: JSON.stringify({
-        error: `Google rechazó la consulta (${errorPrincipal.status}): ${errorPrincipal.mensaje}`
+        error: `Google rechazó la consulta (${res.status}): ${mensajeError}`
       })
     };
   } catch (err) {
