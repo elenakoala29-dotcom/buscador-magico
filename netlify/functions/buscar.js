@@ -25,7 +25,7 @@ export default async (req) => {
   if (!apiKey) {
     return new Response(
       JSON.stringify({
-        error: "La clave del buscador no está configurada en el servidor (GEMINI_API_KEY)."
+        error: "La clave del buscador no está configurada en Netlify (GEMINI_API_KEY)."
       }),
       { status: 500, headers }
     );
@@ -53,29 +53,58 @@ export default async (req) => {
 
   const stream = new ReadableStream({
     async start(controller) {
-      // Mantiene abierta la conexión desde el segundo 0 para evitar cortes de Netlify
+      // Mantiene abierta la conexión desde el segundo 0 para evitar el corte de 10s de Netlify
       controller.enqueue(encoder.encode(" "));
 
       const keepAlive = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(" "));
         } catch (e) {
-          // Ignorar si la conexión ya finalizó
+          // Ignorar si la conexión ya cerró
         }
-      }, 2500);
+      }, 2000);
 
       try {
-        const promptCompleto = `Eres docente de 2º de Primaria (niños de 7-8 años). Responde en español claro, educativo y seguro para niños sobre: "${promptUsuario}".
-Devuelve SOLO un JSON válido con esta estructura exacta:
+        const promptCompleto = `Eres docente de 2º de Primaria (niños y niñas de 7-8 años).
+Responde en español claro, cercano, educativo y 100% seguro para la infancia sobre: "${promptUsuario}".
+Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta:
 {
   "titulo": "Nombre claro del tema",
-  "oraciones": ["Oración 1 muy breve.", "Oración 2..."],
-  "continente": "África | América | Asia | Europa | Oceanía | Antártida | Todo el mundo",
-  "pais": "País o países principales (o 'Todo el planeta')",
-  "curiosidades": ["Curiosidad 1 corta.", "Curiosidad 2 corta.", "Curiosidad 3 corta."],
-  "busqueda_imagen": "término corto para foto real"
+  "pais": "País o países principales donde se encuentra (o 'Todo el planeta')",
+  "continente": "América del Norte | América del Sur | Europa | África | Asia | Oceanía | Antártida | Todo el mundo",
+  "caracteristicas": ["Etiqueta corta 1", "Etiqueta corta 2", "Etiqueta corta 3"],
+  "oraciones": [
+    "Oración 1 muy sencilla y breve.",
+    "Oración 2..."
+  ],
+  "curiosidades": [
+    "Dato curioso 1 corto y sorprendente.",
+    "Dato curioso 2...",
+    "Dato curioso 3..."
+  ],
+  "busquedaImagen": "término corto y exacto para buscar una foto real en Wikipedia",
+  "websRecomendadas": [
+    {
+      "nombre": "Vikidia - Enciclopedia Escolar",
+      "descripcion": "Enciclopedia libre adaptada para niños de Primaria",
+      "url": "https://es.vikidia.org"
+    },
+    {
+      "nombre": "National Geographic Kids",
+      "descripcion": "Artículos y fotos sobre animales, ciencia y naturaleza",
+      "url": "https://kids.nationalgeographic.com"
+    },
+    {
+      "nombre": "Wikimedia Commons",
+      "descripcion": "Fotografías e ilustraciones educativas libres",
+      "url": "https://commons.wikimedia.org"
+    }
+  ]
 }
-Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vive o está). 3 curiosidades breves.`;
+Reglas obligatorias:
+- "oraciones": entre 10 y 12 oraciones cortas y fáciles de leer (qué es, cómo es, dónde vive o está y por qué es importante).
+- "caracteristicas": 3 o 4 palabras clave cortas (ej: "Mamífero", "Carnívoro", "Sabana").
+- "curiosidades": 3 o 4 datos curiosos breves para compartir en clase.`;
 
         const llamarGemini = async (thinkingConfig) => {
           const generationConfig = {
@@ -138,6 +167,12 @@ Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vi
           res = await llamarGemini(null);
         }
 
+        // Si hubo saturación puntual (503), reintenta una vez tras medio segundo
+        if (!res.ok && res.status === 503) {
+          await new Promise((r) => setTimeout(r, 600));
+          res = await llamarGemini({ thinkingLevel: "minimal" });
+        }
+
         clearInterval(keepAlive);
 
         if (res.ok) {
@@ -167,7 +202,7 @@ Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vi
             controller.enqueue(
               encoder.encode(
                 JSON.stringify({
-                  error: `Gemini devolvió una respuesta vacía (motivo: ${candidato.finishReason || "desconocido"}).`
+                  error: `Gemini devolvió la ficha vacía (motivo: ${candidato.finishReason || "desconocido"}).`
                 })
               )
             );
@@ -179,20 +214,25 @@ Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vi
           try {
             objetoFicha = JSON.parse(texto);
           } catch (e) {
-            objetoFicha = { titulo: promptUsuario, oraciones: [texto] };
+            objetoFicha = {
+              titulo: promptUsuario,
+              pais: "Todo el planeta",
+              continente: "Todo el mundo",
+              caracteristicas: ["2º de Primaria"],
+              oraciones: [texto],
+              curiosidades: ["¡Sigue explorando temas nuevos con tu clase!"],
+              busquedaImagen: promptUsuario
+            };
           }
 
-          // Incluye la ficha directa y todos los nombres habituales para que index.html la lea sin fallos
-          const respuestaCompleta = {
-            ...objetoFicha,
-            resultado: texto,
-            respuesta: texto,
-            texto: texto,
-            result: texto,
-            contenido: texto
-          };
-
-          controller.enqueue(encoder.encode(JSON.stringify(respuestaCompleta)));
+          controller.enqueue(
+            encoder.encode(
+              JSON.stringify({
+                ...objetoFicha,
+                resultado: objetoFicha
+              })
+            )
+          );
           controller.close();
           return;
         }
