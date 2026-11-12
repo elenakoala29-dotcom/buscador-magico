@@ -373,12 +373,12 @@
 
             const payload = await res.json();
 
-            if (!res.ok) {
+            if (!res.ok || payload.error) {
                 throw new Error(payload.error || `Error del servidor (${res.status})`);
             }
 
             // Extraer el campo 'resultado' devuelto por la función de Netlify
-            const resultado = payload.resultado;
+            const resultado = payload.resultado || (payload.titulo ? payload : null);
 
             if (!resultado) {
                 throw new Error("La función de búsqueda no devolvió ningún resultado.");
