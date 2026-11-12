@@ -66,48 +66,37 @@ Reglas obligatorias:
 - El array "oraciones" debe tener entre 10 y 15 oraciones breves, fáciles de leer y comprender en 2º de Primaria.
 - Incluye características principales, dónde vive o dónde está, y datos interesantes.`;
 
-    const modelos = [
-      { nombre: "gemini-2.5-flash", sinPensamiento: true },
-      { nombre: "gemini-2.5-flash-lite", sinPensamiento: true },
-      { nombre: "gemini-2.0-flash", sinPensamiento: false }
-    ];
+    const payload = {
+      systemInstruction: {
+        parts: [{ text: instruccionesSistema }]
+      },
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: promptUsuario }]
+        }
+      ],
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
+      ],
+      generationConfig: {
+        temperature: 0.5,
+        responseMimeType: "application/json"
+      }
+    };
 
+    const modelos = ["gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-2.5-flash"];
     let ultimoError = "No se pudo conectar con Gemini.";
     let ultimoStatus = 502;
 
     for (const modelo of modelos) {
-      const generationConfig = {
-        temperature: 0.5,
-        responseMimeType: "application/json"
-      };
-
-      if (modelo.sinPensamiento) {
-        generationConfig.thinkingConfig = { thinkingBudget: 0 };
-      }
-
-      const payload = {
-        systemInstruction: {
-          parts: [{ text: instruccionesSistema }]
-        },
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: promptUsuario }]
-          }
-        ],
-        safetySettings: [
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
-          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
-          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
-        ],
-        generationConfig
-      };
-
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo.nombre}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8500);
+      const timeoutId = setTimeout(() => controller.abort(), 9000);
 
       let response;
       try {
