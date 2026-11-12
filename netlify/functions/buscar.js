@@ -53,7 +53,7 @@ export default async (req) => {
 
   const stream = new ReadableStream({
     async start(controller) {
-      // Envía un espacio inicial al instante para evitar el corte de 10 segundos de Netlify
+      // Mantiene abierta la conexión desde el segundo 0 para evitar cortes de Netlify
       controller.enqueue(encoder.encode(" "));
 
       const keepAlive = setInterval(() => {
@@ -65,8 +65,8 @@ export default async (req) => {
       }, 2500);
 
       try {
-        const promptCompleto = `Eres docente de 2º de Primaria (7-8 años). Responde en español claro, educativo y seguro para niños sobre: "${promptUsuario}".
-Devuelve SOLO un JSON válido con esta estructura:
+        const promptCompleto = `Eres docente de 2º de Primaria (niños de 7-8 años). Responde en español claro, educativo y seguro para niños sobre: "${promptUsuario}".
+Devuelve SOLO un JSON válido con esta estructura exacta:
 {
   "titulo": "Nombre claro del tema",
   "oraciones": ["Oración 1 muy breve.", "Oración 2..."],
@@ -80,7 +80,7 @@ Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vi
         const llamarGemini = async (thinkingConfig) => {
           const generationConfig = {
             temperature: 0.4,
-            maxOutputTokens: 700,
+            maxOutputTokens: 2500,
             responseMimeType: "application/json"
           };
 
@@ -128,10 +128,10 @@ Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vi
           }
         };
 
-        let res = await llamarGemini({ thinkingLevel: "MINIMAL" });
+        let res = await llamarGemini({ thinkingLevel: "minimal" });
 
         if (!res.ok && res.status === 400) {
-          res = await llamarGemini({ thinkingLevel: "LOW" });
+          res = await llamarGemini({ thinkingLevel: "low" });
         }
 
         if (!res.ok && res.status === 400) {
@@ -154,8 +154,27 @@ Reglas: 6 a 8 oraciones cortas y fáciles de leer (qué es, cómo es y dónde vi
             return;
           }
 
-          let texto = candidato.content?.parts?.[0]?.text || "";
-          texto = texto.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+          // Extrae únicamente las partes de respuesta final (ignorando bloques internos de pensamiento)
+          const partes = candidato.content?.parts || [];
+          let texto = partes
+            .filter((p) => !p.thought && typeof p.text === "string")
+            .map((p) => p.text)
+            .join("")
+            .replace(/^```json\s*/i, "")
+            .replace(/```\s*$/i, "")
+            .trim();
+
+          if (!texto) {
+            controller.enqueue(
+              encoder.encode(
+                JSON.stringify({
+                  error: `Gemini devolvió una respuesta vacía (motivo: ${candidato.finishReason || "desconocido"}).`
+                })
+              )
+            );
+            controller.close();
+            return;
+          }
 
           controller.enqueue(encoder.encode(JSON.stringify({ resultado: texto })));
           controller.close();
