@@ -46,7 +46,7 @@ exports.handler = async function (event) {
     }
 
     const instruccionesSistema = `Eres docente de 2º de Primaria (niños de 7-8 años). Responde en español claro, educativo y seguro para niños.
-Devuelve SOLO un JSON válido con esta estructura:
+Devuelve SOLO un JSON válido con esta estructura exacta:
 {
   "titulo": "Nombre del tema",
   "oraciones": ["Oración 1 corta.", "Oración 2..."],
@@ -61,7 +61,7 @@ Reglas:
 
     const consultarGemini = async (modelo, thinkingLevel) => {
       const tiempoRestante = 9200 - (Date.now() - inicio);
-      if (tiempoRestante < 1500) {
+      if (tiempoRestante < 1800) {
         return {
           ok: false,
           status: 504,
@@ -69,9 +69,10 @@ Reglas:
         };
       }
 
+      const modeloLimpio = modelo.replace(/^models\//, "");
       const generationConfig = {
         temperature: 0.4,
-        maxOutputTokens: 900,
+        maxOutputTokens: 850,
         responseMimeType: "application/json"
       };
 
@@ -98,7 +99,7 @@ Reglas:
         generationConfig
       };
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modeloLimpio}:generateContent?key=${encodeURIComponent(apiKey)}`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), tiempoRestante);
 
@@ -110,29 +111,68 @@ Reglas:
           signal: controller.signal
         });
         clearTimeout(timeoutId);
-        const data = await response.json();
+        const rawText = await response.text();
+        let data = {};
+        try {
+          data = JSON.parse(rawText);
+        } catch (e) {
+          data = { error: { message: `Respuesta inesperada de Google (HTTP ${response.status}).` } };
+        }
         return { ok: response.ok, status: response.status, data };
       } catch (err) {
         clearTimeout(timeoutId);
         return {
           ok: false,
           status: 504,
-          data: { error: { message: `Google tardó más de 9 segundos en responder (${modelo}).` } }
+          data: { error: { message: `Google tardó demasiado en responder (${modeloLimpio}).` } }
         };
       }
     };
 
-    // 1. Intento ultrarrápido con razonamiento mínimo en gemini-3.8-flash
+    // 1. Llamada rápida a gemini-3.8-flash con razonamiento mínimo
     let res = await consultarGemini("gemini-3.8-flash", "minimal");
 
-    // 2. Si el parámetro thinkingLevel no aplica, reintenta sin él
+    // 2. Si "minimal" no aplica, prueba con "low"
     if (!res.ok && res.status === 400) {
-      res = await consultarGemini("gemini-3.8-flash", null);
+      res = await consultarGemini("gemini-3.8-flash", "low");
     }
 
-    // 3. Respaldo rápido si hubiera saturación temporal
-    if (!res.ok && (res.status === 404 || res.status === 503)) {
-      res = await consultarGemini("gemini-3.8-flash-lite", "minimal");
+    // 3. Si hubo saturación puntual (503), espera medio segundo y reintenta el mismo modelo
+    if (!res.ok && res.status === 503 && Date.now() - inicio < 5500) {
+      await new Promise((r) => setTimeout(r, 500));
+      res = await consultarGemini("gemini-3.8-flash", "minimal");
+    }
+
+    const errorPrincipal = {
+      status: res.status,
+      mensaje: res.data?.error?.message || `Error HTTP ${res.status}`
+    };
+
+    // 4. Si sigue fallando por modelo no encontrado o saturado, busca automáticamente un modelo Flash activo en tu cuenta
+    if (!res.ok && (res.status === 404 || res.status === 503) && Date.now() - inicio < 6000) {
+      try {
+        const listaRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`
+        );
+        if (listaRes.ok) {
+          const listaData = await listaRes.json();
+          const alternativo = (listaData.models || []).find(
+            (m) =>
+              Array.isArray(m.supportedGenerationMethods) &&
+              m.supportedGenerationMethods.includes("generateContent") &&
+              /flash/i.test(m.name) &&
+              !/gemini-3\.8-flash$|1\.5|2\.0|2\.5/.test(m.name)
+          );
+          if (alternativo) {
+            const resAlt = await consultarGemini(alternativo.name, "minimal");
+            if (resAlt.ok) {
+              res = resAlt;
+            }
+          }
+        }
+      } catch (e) {
+        // Mantiene el errorPrincipal si falla el listado
+      }
     }
 
     if (res.ok) {
@@ -157,12 +197,11 @@ Reglas:
       };
     }
 
-    const mensajeError = res.data?.error?.message || `Error HTTP ${res.status}`;
     return {
       statusCode: 502,
       headers,
       body: JSON.stringify({
-        error: `Google rechazó la consulta (${res.status}): ${mensajeError}`
+        error: `Google rechazó la consulta (${errorPrincipal.status}): ${errorPrincipal.mensaje}`
       })
     };
   } catch (err) {
