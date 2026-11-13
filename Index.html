@@ -97,12 +97,12 @@
         <!-- Sugerencias de Búsqueda Rápida -->
         <div class="w-full flex items-center justify-center gap-2 flex-wrap text-sm sm:text-base font-bold text-slate-600">
             <span class="text-emerald-800 font-extrabold">Ejemplos rápidos:</span>
-            <button onclick="buscarSugerencia('El León')" class="bg-white hover:bg-amber-100 text-amber-800 border-2 border-amber-300 px-3 py-1 rounded-full shadow-sm transition">🦁 El León</button>
-            <button onclick="buscarSugerencia('Egipto y las Pirámides')" class="bg-white hover:bg-orange-100 text-orange-800 border-2 border-orange-300 px-3 py-1 rounded-full shadow-sm transition">🐪 Pirámides</button>
-            <button onclick="buscarSugerencia('El Amazonas')" class="bg-white hover:bg-emerald-100 text-emerald-800 border-2 border-emerald-300 px-3 py-1 rounded-full shadow-sm transition">🌳 Amazonas</button>
-            <button onclick="buscarSugerencia('La Torre Eiffel')" class="bg-white hover:bg-blue-100 text-blue-800 border-2 border-blue-300 px-3 py-1 rounded-full shadow-sm transition">🗼 Torre Eiffel</button>
-            <button onclick="buscarSugerencia('El Canguro')" class="bg-white hover:bg-rose-100 text-rose-800 border-2 border-rose-300 px-3 py-1 rounded-full shadow-sm transition">🦘 Canguro</button>
-            <button onclick="buscarSugerencia('Los Planetas')" class="bg-white hover:bg-purple-100 text-purple-800 border-2 border-purple-300 px-3 py-1 rounded-full shadow-sm transition">🪐 Planetas</button>
+            <button onclick="buscarSugerencia('El León')" class="bg-white hover:bg-amber-100 text-amber-800 border-2 border-amber-300 px-3 py-1 rounded-full shadow-sm transition cursor-pointer">🦁 El León</button>
+            <button onclick="buscarSugerencia('Egipto y las Pirámides')" class="bg-white hover:bg-orange-100 text-orange-800 border-2 border-orange-300 px-3 py-1 rounded-full shadow-sm transition cursor-pointer">🐪 Pirámides</button>
+            <button onclick="buscarSugerencia('El Amazonas')" class="bg-white hover:bg-emerald-100 text-emerald-800 border-2 border-emerald-300 px-3 py-1 rounded-full shadow-sm transition cursor-pointer">🌳 Amazonas</button>
+            <button onclick="buscarSugerencia('La Torre Eiffel')" class="bg-white hover:bg-blue-100 text-blue-800 border-2 border-blue-300 px-3 py-1 rounded-full shadow-sm transition cursor-pointer">🗼 Torre Eiffel</button>
+            <button onclick="buscarSugerencia('El Canguro')" class="bg-white hover:bg-rose-100 text-rose-800 border-2 border-rose-300 px-3 py-1 rounded-full shadow-sm transition cursor-pointer">🦘 Canguro</button>
+            <button onclick="buscarSugerencia('Los Planetas')" class="bg-white hover:bg-purple-100 text-purple-800 border-2 border-purple-300 px-3 py-1 rounded-full shadow-sm transition cursor-pointer">🪐 Planetas</button>
         </div>
     </section>
 
@@ -112,9 +112,9 @@
             🔍
         </div>
         <h2 class="text-2xl sm:text-3xl font-black text-emerald-700 text-center font-heading">
-            Buscando en Internet la mejor información... 🌐✨
+            Buscando en enciclopedias escolares... 🌐✨
         </h2>
-        <p class="text-base sm:text-lg text-emerald-600 font-bold mt-1 text-center">Consultando de forma segura, seleccionando fotos reales y redactando texto fácil...</p>
+        <p class="text-base sm:text-lg text-emerald-600 font-bold mt-1 text-center">Seleccionando fotos reales y adaptando el texto para 2º de Primaria...</p>
     </div>
 
     <!-- Estado de Error -->
@@ -134,7 +134,7 @@
             <div class="md:col-span-5 bg-white rounded-3xl p-4 shadow-xl border-4 border-purple-200 flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-3 px-1">
                     <span class="bg-purple-100 text-purple-800 font-extrabold px-3.5 py-1 rounded-full text-xs sm:text-sm flex items-center gap-1.5 border border-purple-300">
-                        <span>📸</span> Foto Real Multi-Web
+                        <span>📸</span> Foto Real Educativa
                     </span>
                     <span id="imageSourceBadge" class="text-xs font-extrabold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">Wikimedia / Web</span>
                 </div>
@@ -149,7 +149,7 @@
             <!-- Tarjeta 2: Localización y Mapa Mundi de Continentes -->
             <div class="md:col-span-7 bg-white rounded-3xl p-5 shadow-xl border-4 border-sky-200 flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
                         <h3 class="text-2xl font-black text-sky-700 flex items-center gap-2 font-heading">
                             <span>🗺️</span> ¿Dónde se ubica en el mundo?
                         </h3>
@@ -159,7 +159,7 @@
                     </div>
                     
                     <p id="locationText" class="text-lg sm:text-xl font-bold text-slate-700 mb-3 flex items-center gap-2">
-                        <span>📍</span> País / Origen: <span id="countrySpan" class="text-sky-600 font-extrabold"></span>
+                        <span>📍</span> Lugar / Origen: <span id="countrySpan" class="text-sky-600 font-extrabold"></span>
                     </p>
                 </div>
 
@@ -184,7 +184,7 @@
 
                     <!-- Leyenda interactiva abajo del mapa -->
                     <div class="flex flex-wrap justify-center items-center gap-3 mt-2 text-xs sm:text-sm font-bold text-slate-600">
-                        <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-amber-600 inline-block"></span> Continente Resaltado</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-amber-600 inline-block"></span> Zona Resaltada</span>
                         <span class="text-slate-400">|</span>
                         <span id="globalNotice" class="text-sky-700 font-extrabold hidden">🌍 Presente en todo el planeta / Espacio</span>
                     </div>
@@ -192,7 +192,7 @@
             </div>
         </div>
 
-        <!-- Fila Media: Explicación de 10 a 15 Oraciones + Asistente por Voz -->
+        <!-- Fila Media: Explicación en Oraciones Cortas + Asistente por Voz -->
         <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-emerald-200 relative">
             
             <!-- Encabezado con título y Botón de Voz -->
@@ -201,7 +201,7 @@
                     <h2 id="resultTitle" class="text-3xl sm:text-5xl font-black text-emerald-700 capitalize font-heading">
                         Título del tema
                     </h2>
-                    <p class="text-slate-500 font-bold text-sm sm:text-base mt-1">Explicación resumida en lenguaje muy sencillo (de 10 a 15 oraciones)</p>
+                    <p id="fuenteLecturaSubtitle" class="text-slate-500 font-bold text-sm sm:text-base mt-1">Explicación adaptada en oraciones cortas para 2º de Primaria</p>
                 </div>
                 
                 <!-- Botón TTS accesibilidad -->
@@ -218,7 +218,7 @@
             <!-- Bloque de Oraciones Numeradas -->
             <div class="bg-emerald-50/80 rounded-2xl p-5 sm:p-6 border-2 border-emerald-200">
                 <ol id="sentencesList" class="space-y-3.5 text-base sm:text-xl text-slate-800 font-bold leading-relaxed list-decimal list-inside">
-                    <!-- Oraciones dinámicas generadas de 10 a 15 -->
+                    <!-- Oraciones dinámicas -->
                 </ol>
             </div>
         </div>
@@ -268,25 +268,23 @@
         <p>🏫 Desarrollado para Educación Primaria • Información adaptada, entorno seguro y lectura por voz integrada</p>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT -->
+    <!-- LÓGICA JAVASCRIPT AUTÓNOMA (SIN SERVIDOR NI CLAVES API) -->
     <script>
         // Definición global de emergencia para la gestión de errores de imagen
         function manejarErrorImagen(imgElement) {
             if (!imgElement) return;
-            imgElement.onerror = null; // Evita bucle infinito
+            imgElement.onerror = null;
             imgElement.src = 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80';
             const badge = document.getElementById('imageSourceBadge');
             if (badge) badge.textContent = 'Fotografía Educativa';
         }
         window.manejarErrorImagen = manejarErrorImagen;
 
-        // Endpoint seguro de Netlify Functions (oculta la clave API de Gemini en el servidor)
-        const netlifyFunctionUrl = '/.netlify/functions/buscar';
-
         // Variables de Estado
         let currentResultData = null;
         let isSpeaking = false;
         let speechUtterance = null;
+        const memoriaCacheBusquedas = {};
 
         // Mapeo de Continentes a IDs SVG
         const continentSvgMap = {
@@ -294,24 +292,236 @@
             "america del norte": "map-america-norte",
             "norteamérica": "map-america-norte",
             "norteamerica": "map-america-norte",
-            
             "américa del sur": "map-america-sur",
             "america del sur": "map-america-sur",
             "sudamérica": "map-america-sur",
             "sudamerica": "map-america-sur",
-
             "europa": "map-europa",
-            
             "áfrica": "map-africa",
             "africa": "map-africa",
-
             "asia": "map-asia",
-
             "oceanía": "map-oceania",
             "oceania": "map-oceania",
-
             "antártida": "map-antartida",
             "antartida": "map-antartida"
+        };
+
+        // Filtro de seguridad escolar para Primaria (7-8 años)
+        const palabrasBloqueadasAula = [
+            "porn", "porno", "sexo", "sexual", "desnudo", "desnuda", "erotico",
+            "violacion", "abuso", "suicidio", "suicidar", "autolesion", "matar",
+            "asesinato", "asesino", "terrorismo", "terrorista", "droga", "cocaina",
+            "heroina", "marihuana", "alcohol", "borracho", "apuesta", "casino",
+            "puta", "mierda", "joder", "cabron", "gilipollas", "idiota", "estupido"
+        ];
+
+        function normalizarClave(texto) {
+            return String(texto || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9\s]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function esBusquedaSegura(query) {
+            const limpia = normalizarClave(query);
+            if (!limpia || limpia.length < 2) return false;
+            const palabras = limpia.split(" ");
+            for (const p of palabras) {
+                if (palabrasBloqueadasAula.some(b => p === b || (b.length >= 5 && p.startsWith(b)))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        const websEducativasBase = [
+            {
+                nombre: "Vikidia - Enciclopedia Escolar",
+                descripcion: "Enciclopedia libre escrita para niños y niñas de Primaria",
+                url: "https://es.vikidia.org"
+            },
+            {
+                nombre: "National Geographic Kids",
+                descripcion: "Artículos con fotos de la naturaleza, ciencia y animales",
+                url: "https://kids.nationalgeographic.com"
+            },
+            {
+                nombre: "Wikimedia Commons",
+                descripcion: "Imágenes y archivos educativos libres para clase",
+                url: "https://commons.wikimedia.org"
+            }
+        ];
+
+        // Fichas didácticas preparadas especialmente para 2º de Primaria (temas estrella del aula)
+        const fichasCuradasPrimaria = {
+            "leon": {
+                titulo: "El León",
+                pais: "Kenia, Tanzania y países de África",
+                continente: "África",
+                caracteristicas: ["Mamífero", "Carnívoro", "Sabana Africana", "Felino"],
+                oraciones: [
+                    "El león es un mamífero muy grande y fuerte de la familia de los gatos.",
+                    "Vive principalmente en las grandes llanuras con hierba de África llamadas sabanas.",
+                    "Los leones machos tienen una melena muy espesa y dorada alrededor de la cabeza.",
+                    "Las leonas no tienen melena y son muy rápidas y ágiles.",
+                    "Es un animal carnívoro porque se alimenta de carne de otros animales.",
+                    "A diferencia de otros felinos, los leones viven juntos en grupos llamados manadas.",
+                    "Las leonas suelen cazar en equipo para alimentar a toda la familia.",
+                    "Los leones pasan muchas horas del día descansando y durmiendo a la sombra.",
+                    "Su rugido es tan potente que se puede escuchar a varios kilómetros de distancia.",
+                    "A sus crías se las llama cachorros y nacen con pequeñas manchas en su pelaje."
+                ],
+                curiosidades: [
+                    "¡Un león puede dormir hasta 20 horas al día para ahorrar energía!",
+                    "La melena oscura ayuda a proteger el cuello del macho y muestra que está sano y fuerte.",
+                    "Las huellas de los leones en la tierra son parecidas a las de un gato gigante."
+                ],
+                busquedaImagen: "Panthera leo"
+            },
+            "egipto y las piramides": {
+                titulo: "Egipto y las Pirámides",
+                pais: "Egipto (junto al río Nilo)",
+                continente: "África",
+                caracteristicas: ["Historia Antigua", "Monumentos", "Río Nilo", "Faraones"],
+                oraciones: [
+                    "Egipto es un país muy antiguo situado en el noreste de África.",
+                    "Casi todo el país es un desierto, pero el gran río Nilo lo cruza y da agua y vida.",
+                    "Hace miles de años, los reyes del Antiguo Egipto se llamaban faraones.",
+                    "Los egipcios construyeron enormes pirámides de piedra en medio del desierto.",
+                    "Las pirámides servían para guardar y proteger las tumbas de los faraones.",
+                    "Las tres pirámides más famosas están en Giza, muy cerca de la ciudad de El Cairo.",
+                    "La Gran Pirámide de Keops es tan alta como un edificio de cuarenta pisos.",
+                    "Para construirlas movieron millones de bloques de piedra muy pesados sin máquinas modernas.",
+                    "Los antiguos egipcios escribían con dibujos llamados jeroglíficos.",
+                    "Hoy en día millones de personas viajan a Egipto para admirar estas maravillas."
+                ],
+                curiosidades: [
+                    "Junto a las pirámides está la Gran Esfinge, una estatua gigante con cuerpo de león y cabeza humana.",
+                    "Cuando se construyeron, las pirámides estaban cubiertas de piedra blanca brillante que reflejaba el sol.",
+                    "Los gatos eran animales muy queridos y respetados en las casas del Antiguo Egipto."
+                ],
+                busquedaImagen: "Pirámides de Giza"
+            },
+            "amazonas": {
+                titulo: "El Amazonas",
+                pais: "Brasil, Perú, Colombia y países vecinos",
+                continente: "América del Sur",
+                caracteristicas: ["Selva Tropical", "Río Gigante", "Biodiversidad", "Pulmón Verde"],
+                oraciones: [
+                    "El Amazonas es la selva tropical más grande y frondosa de todo nuestro planeta.",
+                    "Se encuentra en América del Sur y ocupa una parte enorme de Brasil y otros países.",
+                    "Por su interior corre el río Amazonas, que es el río más caudaloso del mundo.",
+                    "En esta selva llueve casi todos los días y hace mucho calor y humedad.",
+                    "Sus árboles son altísimos y sus copas forman como un gran techo verde.",
+                    "En el Amazonas viven millones de animales diferentes como jaguares, tucanes y monos.",
+                    "En las aguas del río nadan delfines rosados, pirañas y tortugas gigantes.",
+                    "También viven pueblos indígenas que conocen todos los secretos de las plantas.",
+                    "Los árboles del Amazonas ayudan a limpiar el aire y producir oxígeno para la Tierra.",
+                    "Por eso debemos cuidar y proteger esta selva contra los incendios y la tala."
+                ],
+                curiosidades: [
+                    "En el río Amazonas viven delfines de color rosado que nadan entre los árboles cuando sube el agua.",
+                    "Una de cada diez especies de animales conocidas en el mundo vive en la selva amazónica.",
+                    "El río Amazonas es tan ancho en algunos tramos que desde una orilla no se ve la otra."
+                ],
+                busquedaImagen: "Selva amazónica"
+            },
+            "torre eiffel": {
+                titulo: "La Torre Eiffel",
+                pais: "Francia (ciudad de París)",
+                continente: "Europa",
+                caracteristicas: ["Monumento", "Hierro", "Arquitectura", "París"],
+                oraciones: [
+                    "La Torre Eiffel es un monumento muy famoso situado en la ciudad de París, en Francia.",
+                    "Está construida completamente con miles de piezas de hierro unidas entre sí.",
+                    "Fue diseñada por el ingeniero Gustave Eiffel y su equipo en el año 1889.",
+                    "Mide unos 330 metros de altura, por eso se ve desde casi toda la ciudad.",
+                    "Tiene tres pisos a los que se puede subir en ascensor o por escaleras.",
+                    "Desde lo más alto se pueden ver todos los puentes, calles y edificios de París.",
+                    "Para proteger el hierro de la lluvia, la torre se vuelve a pintar cada siete años.",
+                    "Al principio iba a desmontarse tras una exposición, pero gustó tanto que se quedó.",
+                    "Por la noche se ilumina con miles de luces doradas que brillan cada hora.",
+                    "Es uno de los lugares más visitados por familias y viajeros de todo el mundo."
+                ],
+                curiosidades: [
+                    "En verano, con el calor del sol, el hierro se dilata y la torre crece hasta 15 centímetros.",
+                    "Para pintar toda la Torre Eiffel se necesitan unas 60 toneladas de pintura.",
+                    "Tiene más de 1.600 escalones desde el suelo hasta la cima."
+                ],
+                busquedaImagen: "Torre Eiffel"
+            },
+            "canguro": {
+                titulo: "El Canguro",
+                pais: "Australia",
+                continente: "Oceanía",
+                caracteristicas: ["Mamífero", "Marsupial", "Herbívoro", "Australia"],
+                oraciones: [
+                    "El canguro es un mamífero muy especial que vive en libertad en Australia.",
+                    "Es un animal marsupial porque las mamás tienen una bolsa en su barriga.",
+                    "En esa bolsa calentita crecen y toman leche las crías recién nacidas.",
+                    "Tiene unas patas traseras enormes y muy fuertes para dar grandes saltos.",
+                    "Su cola es larga y gruesa y le sirve para mantener el equilibrio al saltar.",
+                    "Cuando va rápido, un canguro puede dar saltos de hasta ocho metros de largo.",
+                    "Es un animal herbívoro que se alimenta de hierba, hojas y brotes tiernos.",
+                    "Suele salir a comer al atardecer o por la noche cuando hace menos calor.",
+                    "Los canguros viven en grupos llamados tropas para protegerse juntos.",
+                    "No pueden caminar hacia atrás con facilidad debido a la forma de sus patas y su cola."
+                ],
+                curiosidades: [
+                    "Cuando nace, un bebé canguro es tan pequeño como una gominola o una judía.",
+                    "¡Los canguros también saben nadar muy bien usando sus patas!",
+                    "En Australia hay más canguros que personas viviendo en el país."
+                ],
+                busquedaImagen: "Canguro"
+            },
+            "planetas": {
+                titulo: "Los Planetas del Sistema Solar",
+                pais: "Espacio Exterior (Sistema Solar)",
+                continente: "Todo el mundo",
+                caracteristicas: ["Astronomía", "Sistema Solar", "Espacio", "Ocho Planetas"],
+                oraciones: [
+                    "Los planetas son grandes cuerpos redondos que giran alrededor de una estrella, el Sol.",
+                    "En nuestro Sistema Solar hay ocho planetas diferentes viajando por el espacio.",
+                    "Los cuatro más cercanos al Sol son rocosos: Mercurio, Venus, la Tierra y Marte.",
+                    "La Tierra es nuestro hogar y el único planeta donde conocemos que hay vida y agua líquida.",
+                    "Marte es conocido como el planeta rojo por el color oxidado de sus rocas.",
+                    "Más lejos están los cuatro planetas gigantes hechos de gas y hielo.",
+                    "Júpiter es el planeta más grande de todos, tan enorme que cabrían mil Tierras dentro.",
+                    "Saturno es famoso por sus preciosos anillos brillantes hechos de hielo y rocas.",
+                    "Urano y Neptuno son los planetas más lejanos y fríos del Sistema Solar.",
+                    "Todos los planetas giran sobre sí mismos mientras dan vueltas alrededor del Sol."
+                ],
+                curiosidades: [
+                    "Un día en Júpiter dura solo 10 horas porque gira sobre sí mismo a toda velocidad.",
+                    "En Venus hace más calor que en Mercurio porque sus nubes atrapan el calor del Sol.",
+                    "Los anillos de Saturno son muy anchos pero tan finos como una hoja de papel gigante."
+                ],
+                busquedaImagen: "Sistema Solar"
+            }
+        };
+
+        // Alias para que cualquier forma de escribir los ejemplos encuentre la ficha curada
+        const aliasFichas = {
+            "el leon": "leon",
+            "leones": "leon",
+            "los leones": "leon",
+            "piramides": "egipto y las piramides",
+            "las piramides": "egipto y las piramides",
+            "egipto": "egipto y las piramides",
+            "el amazonas": "amazonas",
+            "selva amazonica": "amazonas",
+            "la torre eiffel": "torre eiffel",
+            "eiffel": "torre eiffel",
+            "el canguro": "canguro",
+            "canguros": "canguro",
+            "los canguros": "canguro",
+            "los planetas": "planetas",
+            "planeta": "planetas",
+            "sistema solar": "planetas",
+            "el sistema solar": "planetas"
         };
 
         function handleKeyPress(e) {
@@ -325,7 +535,7 @@
             ejecutarBusqueda();
         }
 
-        // Ejecución de la búsqueda principal a través de Netlify Functions
+        // Ejecución de la búsqueda principal (100% autónoma, instantánea y segura)
         async function ejecutarBusqueda() {
             const queryInput = document.getElementById('searchInput');
             const query = queryInput.value.trim();
@@ -335,98 +545,212 @@
                 return;
             }
 
-            // Detener lectura de voz activa
             detenerVoz();
 
-            // Interfaz: Mostrar cargando
+            if (!esBusquedaSegura(query)) {
+                document.getElementById('resultsPanel').classList.add('hidden');
+                document.getElementById('loadingBox').classList.replace('flex', 'hidden');
+                document.getElementById('errorMessage').textContent = "¡Ups! Esa búsqueda no es adecuada para clase.";
+                document.getElementById('errorSubMessage').textContent = "Prueba a buscar un animal, un planeta, un país, un monumento o un invento.";
+                document.getElementById('errorBox').classList.remove('hidden');
+                return;
+            }
+
             document.getElementById('resultsPanel').classList.add('hidden');
             document.getElementById('errorBox').classList.add('hidden');
             document.getElementById('loadingBox').classList.replace('hidden', 'flex');
 
             try {
-                // 1. Llamada POST a /.netlify/functions/buscar enviando { prompt }
-                const dataIA = await consultarServidorNetlify(query);
-                currentResultData = dataIA;
+                // 1. Obtener ficha adaptada a Primaria (curada, Vikidia o Wikipedia)
+                const dataFicha = await obtenerFichaEducativa(query);
+                currentResultData = dataFicha;
 
-                // 2. Búsqueda Multi-Web de Imágenes
-                const imageData = await buscarImagenMultifuente(dataIA.busquedaImagen || query, query);
+                // 2. Buscar foto real (usa la del artículo si ya venía o busca en 4 niveles)
+                let imageData = dataFicha.imagenDirecta || null;
+                if (!imageData) {
+                    imageData = await buscarImagenMultifuente(dataFicha.busquedaImagen || query, query);
+                }
 
                 // 3. Renderizar resultados completados
-                renderizarResultados(query, dataIA, imageData);
+                renderizarResultados(query, dataFicha, imageData);
 
             } catch (error) {
                 console.error("Error al buscar:", error);
                 document.getElementById('loadingBox').classList.replace('flex', 'hidden');
-                document.getElementById('errorMessage').textContent = "¡Uy! No pudimos procesar la búsqueda en este momento.";
-                document.getElementById('errorSubMessage').textContent = error.message || "Comprueba tu conexión o inténtalo de nuevo en unos segundos.";
+                document.getElementById('errorMessage').textContent = "¡Uy! No encontramos información clara sobre ese tema.";
+                document.getElementById('errorSubMessage').textContent = error.message || "Revisa cómo has escrito la palabra o prueba con uno de los botones de arriba.";
                 document.getElementById('errorBox').classList.remove('hidden');
             }
         }
 
-        // Petición POST a /.netlify/functions/buscar y procesamiento del campo "resultado"
-        async function consultarServidorNetlify(query) {
-            const res = await fetch(netlifyFunctionUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: query })
-            });
+        function detectarContinenteYPais(titulo, texto) {
+            const t = normalizarClave(`${titulo} ${texto}`);
+            if (/\b(espana|madrid|barcelona|francia|paris|italia|roma|alemania|londres|reino unido|portugal|grecia|europa|europeo)\b/.test(t)) {
+                return { continente: "Europa", pais: "Países de Europa" };
+            }
+            if (/\b(egipto|kenia|tanzania|marruecos|sudafrica|sahara|nilo|africa|africano)\b/.test(t)) {
+                return { continente: "África", pais: "Países de África" };
+            }
+            if (/\b(brasil|peru|colombia|argentina|chile|amazonas|andes|america del sur|sudamerica)\b/.test(t)) {
+                return { continente: "América del Sur", pais: "Países de América del Sur" };
+            }
+            if (/\b(estados unidos|mexico|canada|america del norte|norteamerica)\b/.test(t)) {
+                return { continente: "América del Norte", pais: "Países de América del Norte" };
+            }
+            if (/\b(china|japon|india|rusia|himalaya|asia|asiatico)\b/.test(t)) {
+                return { continente: "Asia", pais: "Países de Asia" };
+            }
+            if (/\b(australia|nueva zelanda|oceania)\b/.test(t)) {
+                return { continente: "Oceanía", pais: "Australia y Oceanía" };
+            }
+            if (/\b(antartida|polo sur|pinguino emperador)\b/.test(t)) {
+                return { continente: "Antártida", pais: "Región Polar Antártica" };
+            }
+            if (/\b(planeta|sol|luna|estrella|galaxia|universo|espacio|astronomia|saturno|jupiter|marte)\b/.test(t)) {
+                return { continente: "Todo el mundo", pais: "Espacio Exterior / Universo" };
+            }
+            return { continente: "Todo el mundo", pais: "Todo el planeta" };
+        }
 
-            const payload = await res.json();
+        function detectarEtiquetasPrimaria(texto, origen) {
+            const t = normalizarClave(texto);
+            const etiquetas = [origen, "Lectura Fácil"];
+            if (/\b(animal|mamifero|ave|pez|reptil|insecto|especie|fauna|selva|oceano)\b/.test(t)) {
+                etiquetas.push("Naturaleza y Animales");
+            } else if (/\b(planeta|sol|luna|estrella|espacio|astronomia)\b/.test(t)) {
+                etiquetas.push("El Universo");
+            } else if (/\b(rio|montana|pais|continente|mar|isla|volcan|desierto)\b/.test(t)) {
+                etiquetas.push("Geografía");
+            } else if (/\b(historia|antiguo|siglo|monumento|castillo|rey|faraon|invento)\b/.test(t)) {
+                etiquetas.push("Historia y Cultura");
+            } else if (/\b(planta|arbol|flor|fruto|bosque)\b/.test(t)) {
+                etiquetas.push("Plantas");
+            } else {
+                etiquetas.push("2º de Primaria");
+            }
+            return etiquetas;
+        }
 
-            if (!res.ok || payload.error) {
-                throw new Error(payload.error || `Error del servidor (${res.status})`);
+        function adaptarTextoParaPrimaria(titulo, textoCrudo, imagenUrl, fuenteNombre) {
+            // Limpiar paréntesis técnicos, pronunciaciones y citas numéricas [1]
+            const limpio = textoCrudo
+                .replace(/\[[^\]]*\]/g, "")
+                .replace(/\([^)]*\)/g, "")
+                .replace(/\s+([.,;:!?])/g, "$1")
+                .replace(/\s+/g, " ")
+                .trim();
+
+            // Dividir en oraciones claras
+            const oracionesRaw = limpio
+                .split(/(?<=[.!?])\s+/)
+                .map(s => s.trim())
+                .filter(s => s.length >= 20 && !/puede referirse a/i.test(s));
+
+            // Acortar frases excesivamente largas para facilitar la lectura en 2º de Primaria
+            const oracionesCortas = [];
+            for (const frase of oracionesRaw) {
+                if (frase.length > 155 && frase.includes(", y ")) {
+                    const partes = frase.split(", y ");
+                    oracionesCortas.push(partes[0].trim() + ".");
+                    const segunda = partes.slice(1).join(", y ").trim();
+                    if (segunda.length > 15) {
+                        oracionesCortas.push(segunda.charAt(0).toUpperCase() + segunda.slice(1));
+                    }
+                } else {
+                    oracionesCortas.push(frase);
+                }
             }
 
-            // Extraer el campo 'resultado' devuelto por la función de Netlify
-            const resultado = payload.resultado || (payload.titulo ? payload : null);
+            if (oracionesCortas.length === 0) return null;
 
-            if (!resultado) {
-                throw new Error("La función de búsqueda no devolvió ningún resultado.");
+            const oracionesPrincipales = oracionesCortas.slice(0, 8);
+            const curiosidades = oracionesCortas.slice(8, 11);
+
+            if (curiosidades.length === 0) {
+                curiosidades.push(
+                    `Este tema forma parte de nuestra enciclopedia escolar adaptada para aprender en clase.`,
+                    `Puedes pulsar el botón rosa «¡Escuchar!» para oír toda la explicación en voz alta.`
+                );
             }
 
-            // Si resultado ya es un objeto JSON estructurado, lo devolvemos directamente
-            if (typeof resultado === 'object') {
-                return resultado;
-            }
+            const ubicacion = detectarContinenteYPais(titulo, limpio);
+            const caracteristicas = detectarEtiquetasPrimaria(limpio, fuenteNombre);
 
-            // Si resultado es una cadena de texto, intentamos parsearla como JSON o adaptarla
+            return {
+                titulo: titulo,
+                pais: ubicacion.pais,
+                continente: ubicacion.continente,
+                caracteristicas: caracteristicas,
+                oraciones: oracionesPrincipales,
+                curiosidades: curiosidades,
+                busquedaImagen: titulo,
+                imagenDirecta: imagenUrl ? { url: imagenUrl, fuente: fuenteNombre } : null,
+                websRecomendadas: websEducativasBase,
+                origenAdaptacion: fuenteNombre
+            };
+        }
+
+        async function consultarMediaWiki(baseUrl, fuenteNombre, consulta) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 5000);
             try {
-                const cleanJsonText = String(resultado).replace(/```json/gi, '').replace(/```/g, '').trim();
-                return JSON.parse(cleanJsonText);
-            } catch (parseErr) {
-                // Fallback si el servidor devolviera texto plano en 'resultado'
-                const oracionesTexto = String(resultado)
-                    .split(/(?<=[.!?])\s+/)
-                    .map(s => s.trim())
-                    .filter(Boolean);
+                const url = `${baseUrl}?action=query&generator=search&gsrsearch=${encodeURIComponent(consulta)}&gsrlimit=4&prop=extracts|pageimages|pageprops&exintro=1&explaintext=1&pithumbsize=800&format=json&origin=*`;
+                const res = await fetch(url, { signal: controller.signal });
+                clearTimeout(timer);
+                if (!res.ok) return null;
+                const data = await res.json();
+                if (!data.query || !data.query.pages) return null;
 
+                const pages = Object.values(data.query.pages).sort((a, b) => (a.index || 0) - (b.index || 0));
+                for (const page of pages) {
+                    // Saltar páginas de desambiguación
+                    if (page.pageprops && page.pageprops.disambiguation !== undefined) continue;
+                    if (!page.extract || page.extract.trim().length < 55) continue;
+                    if (/puede referirse a:/i.test(page.extract)) continue;
+
+                    const thumb = page.thumbnail && page.thumbnail.source ? page.thumbnail.source : null;
+                    const ficha = adaptarTextoParaPrimaria(page.title, page.extract, thumb, fuenteNombre);
+                    if (ficha) return ficha;
+                }
+                return null;
+            } catch (e) {
+                clearTimeout(timer);
+                return null;
+            }
+        }
+
+        async function obtenerFichaEducativa(query) {
+            const clave = normalizarClave(query);
+            const claveCurada = fichasCuradasPrimaria[clave] ? clave : aliasFichas[clave];
+
+            // 1. Si es uno de los temas estrella preparados para clase, carga al instante
+            if (claveCurada && fichasCuradasPrimaria[claveCurada]) {
                 return {
-                    titulo: query,
-                    pais: "Consulta Educativa",
-                    continente: "Global / Espacio",
-                    oraciones: oracionesTexto.length > 0 ? oracionesTexto : [String(resultado)],
-                    caracteristicas: ["2º de Primaria", "Lectura Fácil"],
-                    curiosidades: ["¡Sigue explorando temas nuevos cada día con tu clase!"],
-                    busquedaImagen: query,
-                    websRecomendadas: [
-                        {
-                            nombre: "Vikidia - Enciclopedia Escolar",
-                            descripcion: "Enciclopedia libre para niños de primaria",
-                            url: "https://es.vikidia.org"
-                        },
-                        {
-                            nombre: "National Geographic Kids",
-                            descripcion: "Artículos con fotos de la naturaleza y animales",
-                            url: "https://kids.nationalgeographic.com"
-                        },
-                        {
-                            nombre: "Wikimedia Commons",
-                            descripcion: "Imágenes y archivos educativos libres",
-                            url: "https://commons.wikimedia.org"
-                        }
-                    ]
+                    ...fichasCuradasPrimaria[claveCurada],
+                    websRecomendadas: websEducativasBase,
+                    origenAdaptacion: "Ficha Adaptada 2º Primaria"
                 };
             }
+
+            // 2. Comprobar memoria caché de esta sesión para respuestas instantáneas
+            if (memoriaCacheBusquedas[clave]) {
+                return memoriaCacheBusquedas[clave];
+            }
+
+            // 3. Consultar primero Vikidia en Español (enciclopedia escrita para niños de 8-13 años)
+            let ficha = await consultarMediaWiki("https://es.vikidia.org/w/api.php", "Vikidia Infantil", query);
+
+            // 4. Si no está en Vikidia, consultar Wikipedia en Español y adaptar a lectura fácil
+            if (!ficha) {
+                ficha = await consultarMediaWiki("https://es.wikipedia.org/w/api.php", "Enciclopedia Escolar", query);
+            }
+
+            if (!ficha) {
+                throw new Error("Prueba con una palabra más sencilla (por ejemplo: «Jirafa», «Volcán», «Abeja» o «España»).");
+            }
+
+            memoriaCacheBusquedas[clave] = ficha;
+            return ficha;
         }
 
         // Función de búsqueda de imágenes multi-web ultra-robusta
@@ -453,9 +777,7 @@
                             }
                         }
                     }
-                } catch (e) {
-                    console.warn("Nivel 1 (Wiki ES) falló:", e);
-                }
+                } catch (e) {}
             }
 
             // Nivel 2: Wikipedia en Inglés
@@ -472,9 +794,7 @@
                             }
                         }
                     }
-                } catch (e) {
-                    console.warn("Nivel 2 (Wiki EN) falló:", e);
-                }
+                } catch (e) {}
             }
 
             // Nivel 3: Repositorio Libre Wikimedia Commons API
@@ -494,9 +814,7 @@
                             }
                         }
                     }
-                } catch (e) {
-                    console.warn("Nivel 3 (Commons) falló:", e);
-                }
+                } catch (e) {}
             }
 
             // Nivel 4: Fallback Dinámico con Unsplash
@@ -518,9 +836,8 @@
             document.getElementById('imageCaption').textContent = `Fotografía real del tema ("${data.titulo || queryOriginal}")`;
 
             // 2. Ubicación y Continente
-            document.getElementById('countrySpan').textContent = data.pais || "Múltiples países";
+            document.getElementById('countrySpan').textContent = data.pais || "Todo el planeta";
             document.getElementById('continentBadge').textContent = data.continente || "Global";
-            
             resaltarContinenteEnMapa(data.continente);
 
             // 3. Etiquetas de Características
@@ -535,10 +852,10 @@
                 });
             }
 
-            // 4. Oraciones Numeradas (10 a 15)
+            // 4. Oraciones Numeradas
             const sentencesList = document.getElementById('sentencesList');
             sentencesList.innerHTML = '';
-            const listaOraciones = data.oraciones || data.descripcion_oraciones || [];
+            const listaOraciones = data.oraciones || [];
             listaOraciones.forEach(oracion => {
                 const li = document.createElement('li');
                 li.className = "pl-2";
@@ -566,11 +883,7 @@
             // 6. Fuentes y Webs Recomendadas
             const webSourcesGrid = document.getElementById('webSourcesGrid');
             webSourcesGrid.innerHTML = '';
-            const webs = data.websRecomendadas || [
-                { nombre: "Vikidia Niños", descripcion: "Enciclopedia educativa para primaria", url: "https://es.vikidia.org" },
-                { nombre: "National Geographic Kids", descripcion: "Ciencia, animales y geografía", url: "https://kids.nationalgeographic.com" },
-                { nombre: "Wikimedia Commons", descripcion: "Archivos e imágenes libres", url: "https://commons.wikimedia.org" }
-            ];
+            const webs = data.websRecomendadas || websEducativasBase;
 
             webs.forEach(w => {
                 const card = document.createElement('a');
@@ -612,7 +925,6 @@
                 const el = document.getElementById(pathId);
                 if (el) el.classList.add('highlighted');
             } else {
-                // Si abarca varios continentes o es global/espacio
                 document.querySelectorAll('.continent-path').forEach(p => p.classList.add('highlighted'));
                 globalNotice.classList.remove('hidden');
             }
@@ -641,7 +953,7 @@
             let texto = `${currentResultData.titulo}. `;
             texto += `Se ubica en ${currentResultData.pais}, en ${currentResultData.continente}. `;
 
-            const lista = currentResultData.oraciones || currentResultData.descripcion_oraciones || [];
+            const lista = currentResultData.oraciones || [];
             texto += lista.join(" ");
 
             if (currentResultData.curiosidades) {
@@ -650,7 +962,7 @@
 
             speechUtterance = new SpeechSynthesisUtterance(texto);
             speechUtterance.lang = 'es-ES';
-            speechUtterance.rate = 0.85; // Velocidad adaptada para niños
+            speechUtterance.rate = 0.85;
             speechUtterance.pitch = 1.05;
 
             const btn = document.getElementById('btnAudioTTS');
