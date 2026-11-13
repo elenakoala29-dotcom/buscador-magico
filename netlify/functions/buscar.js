@@ -65,51 +65,23 @@ export default async (req) => {
       }, 2000);
 
       try {
-        const promptCompleto = `Eres docente de 2º de Primaria (niños y niñas de 7-8 años).
-Responde en español claro, cercano, educativo y 100% seguro para la infancia sobre: "${promptUsuario}".
-Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta:
+        const promptCompleto = `Docente de 2º de Primaria (7-8 años). Tema: "${promptUsuario}".
+Responde en español muy claro, educativo y seguro para niños, SOLO con este JSON válido:
 {
   "titulo": "Nombre claro del tema",
-  "pais": "País o países principales donde se encuentra (o 'Todo el planeta')",
+  "pais": "País o países principales (o 'Todo el planeta')",
   "continente": "América del Norte | América del Sur | Europa | África | Asia | Oceanía | Antártida | Todo el mundo",
-  "caracteristicas": ["Etiqueta corta 1", "Etiqueta corta 2", "Etiqueta corta 3"],
-  "oraciones": [
-    "Oración 1 muy sencilla y breve.",
-    "Oración 2..."
-  ],
-  "curiosidades": [
-    "Dato curioso 1 corto y sorprendente.",
-    "Dato curioso 2...",
-    "Dato curioso 3..."
-  ],
-  "busquedaImagen": "término corto y exacto para buscar una foto real en Wikipedia",
-  "websRecomendadas": [
-    {
-      "nombre": "Vikidia - Enciclopedia Escolar",
-      "descripcion": "Enciclopedia libre adaptada para niños de Primaria",
-      "url": "https://es.vikidia.org"
-    },
-    {
-      "nombre": "National Geographic Kids",
-      "descripcion": "Artículos y fotos sobre animales, ciencia y naturaleza",
-      "url": "https://kids.nationalgeographic.com"
-    },
-    {
-      "nombre": "Wikimedia Commons",
-      "descripcion": "Fotografías e ilustraciones educativas libres",
-      "url": "https://commons.wikimedia.org"
-    }
-  ]
+  "caracteristicas": ["Etiqueta 1", "Etiqueta 2", "Etiqueta 3"],
+  "oraciones": ["Oración 1 corta.", "Oración 2 corta."],
+  "curiosidades": ["Curiosidad 1 breve.", "Curiosidad 2 breve.", "Curiosidad 3 breve."],
+  "busquedaImagen": "término exacto para foto en Wikipedia"
 }
-Reglas obligatorias:
-- "oraciones": entre 10 y 12 oraciones cortas y fáciles de leer (qué es, cómo es, dónde vive o está y por qué es importante).
-- "caracteristicas": 3 o 4 palabras clave cortas (ej: "Mamífero", "Carnívoro", "Sabana").
-- "curiosidades": 3 o 4 datos curiosos breves para compartir en clase.`;
+Reglas: 8 a 10 oraciones cortas (máximo 12 palabras cada una) sobre qué es, cómo es y dónde vive o está. 3 curiosidades muy breves.`;
 
-        const llamarGemini = async (thinkingConfig) => {
+        const llamarGeminiStream = async (thinkingConfig) => {
           const generationConfig = {
             temperature: 0.4,
-            maxOutputTokens: 2500,
+            maxOutputTokens: 1500,
             responseMimeType: "application/json"
           };
 
@@ -133,9 +105,9 @@ Reglas obligatorias:
             generationConfig
           };
 
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse&key=${encodeURIComponent(apiKey)}`;
           const abortCtrl = new AbortController();
-          const timeoutId = setTimeout(() => abortCtrl.abort(), 24000);
+          const timeoutId = setTimeout(() => abortCtrl.abort(), 28000);
 
           try {
             const response = await fetch(url, {
@@ -144,38 +116,84 @@ Reglas obligatorias:
               body: JSON.stringify(payload),
               signal: abortCtrl.signal
             });
+
+            if (!response.ok) {
+              clearTimeout(timeoutId);
+              const errText = await response.text();
+              let errData = {};
+              try {
+                errData = JSON.parse(errText);
+              } catch (e) {
+                errData = { error: { message: `Error HTTP ${response.status}` } };
+              }
+              return { ok: false, status: response.status, data: errData };
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+            let textoCompleto = "";
+            let finishReason = "";
+
+            const procesarLinea = (linea) => {
+              const trimmed = linea.trim();
+              if (!trimmed.startsWith("data:")) return;
+              const jsonStr = trimmed.slice(5).trim();
+              if (!jsonStr || jsonStr === "[DONE]") return;
+              try {
+                const chunk = JSON.parse(jsonStr);
+                const cand = chunk.candidates && chunk.candidates[0];
+                if (cand) {
+                  if (cand.finishReason) finishReason = cand.finishReason;
+                  const parts = cand.content?.parts || [];
+                  for (const p of parts) {
+                    if (!p.thought && typeof p.text === "string") {
+                      textoCompleto += p.text;
+                    }
+                  }
+                }
+              } catch (e) {
+                // Ignorar fragmentos parciales
+              }
+            };
+
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lineas = buffer.split("\n");
+              buffer = lineas.pop() || "";
+              for (const linea of lineas) {
+                procesarLinea(linea);
+              }
+            }
+
+            if (buffer.trim()) {
+              procesarLinea(buffer);
+            }
+
             clearTimeout(timeoutId);
-            const data = await response.json();
-            return { ok: response.ok, status: response.status, data };
+            return { ok: true, status: 200, texto: textoCompleto, finishReason };
           } catch (err) {
             clearTimeout(timeoutId);
             return {
               ok: false,
               status: 504,
-              data: { error: { message: "Google tardó más de 24 segundos en responder." } }
+              data: { error: { message: "Google tardó más de 28 segundos en responder." } }
             };
           }
         };
 
-        // 1. Usa nivel de pensamiento "low" (compatible con gemini-3.8-flash)
-        let res = await llamarGemini({ thinkingLevel: "low" });
+        let res = await llamarGeminiStream({ thinkingLevel: "low" });
 
-        // 2. Si "low" no aplicara, reintenta con la configuración por defecto del modelo
         if (!res.ok && res.status === 400) {
-          res = await llamarGemini(null);
-        }
-
-        // 3. Si hubo saturación puntual (503), reintenta una vez
-        if (!res.ok && res.status === 503) {
-          await new Promise((r) => setTimeout(r, 600));
-          res = await llamarGemini({ thinkingLevel: "low" });
+          res = await llamarGeminiStream(null);
         }
 
         clearInterval(keepAlive);
 
         if (res.ok) {
-          const candidato = res.data.candidates && res.data.candidates[0];
-          if (!candidato || candidato.finishReason === "SAFETY") {
+          if (res.finishReason === "SAFETY") {
             controller.enqueue(
               encoder.encode(
                 JSON.stringify({
@@ -187,11 +205,7 @@ Reglas obligatorias:
             return;
           }
 
-          const partes = candidato.content?.parts || [];
-          let texto = partes
-            .filter((p) => !p.thought && typeof p.text === "string")
-            .map((p) => p.text)
-            .join("")
+          const texto = (res.texto || "")
             .replace(/^```json\s*/i, "")
             .replace(/```\s*$/i, "")
             .trim();
@@ -200,7 +214,7 @@ Reglas obligatorias:
             controller.enqueue(
               encoder.encode(
                 JSON.stringify({
-                  error: `Gemini devolvió la ficha vacía (motivo: ${candidato.finishReason || "desconocido"}).`
+                  error: `Gemini devolvió la ficha vacía (motivo: ${res.finishReason || "desconocido"}).`
                 })
               )
             );
