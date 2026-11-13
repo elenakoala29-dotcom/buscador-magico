@@ -53,7 +53,7 @@ export default async (req) => {
 
   const stream = new ReadableStream({
     async start(controller) {
-      // Mantiene abierta la conexión desde el segundo 0 para evitar el corte de 10s de Netlify
+      // Mantiene abierta la conexión desde el segundo 0 para evitar cortes de Netlify
       controller.enqueue(encoder.encode(" "));
 
       const keepAlive = setInterval(() => {
@@ -157,20 +157,18 @@ Reglas obligatorias:
           }
         };
 
-        let res = await llamarGemini({ thinkingLevel: "minimal" });
+        // 1. Usa nivel de pensamiento "low" (compatible con gemini-3.8-flash)
+        let res = await llamarGemini({ thinkingLevel: "low" });
 
-        if (!res.ok && res.status === 400) {
-          res = await llamarGemini({ thinkingLevel: "low" });
-        }
-
+        // 2. Si "low" no aplicara, reintenta con la configuración por defecto del modelo
         if (!res.ok && res.status === 400) {
           res = await llamarGemini(null);
         }
 
-        // Si hubo saturación puntual (503), reintenta una vez tras medio segundo
+        // 3. Si hubo saturación puntual (503), reintenta una vez
         if (!res.ok && res.status === 503) {
           await new Promise((r) => setTimeout(r, 600));
-          res = await llamarGemini({ thinkingLevel: "minimal" });
+          res = await llamarGemini({ thinkingLevel: "low" });
         }
 
         clearInterval(keepAlive);
