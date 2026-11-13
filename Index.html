@@ -723,4 +723,479 @@
             const candidatas = [];
 
             // 1. Prioridad máxima: frases que vengan de la sección "Curiosidades" del artículo
-            for
+            for (const frase of oracionesCuriosidades) {
+                const huella = normalizarClave(frase).slice(0, 45);
+                if (!huellasUsadas.has(huella)) {
+                    huellasUsadas.add(huella);
+                    candidatas.push(frase);
+                }
+            }
+
+            // 2. Frases del resto del artículo que contengan datos sorprendentes, medidas, récords o capacidades
+            const patronesDatoInteresante = /\b(\d+|millon|millones|metro|metros|kilometro|kilometros|centimetro|kilo|kilos|tonelada|ano|anos|hora|horas|dia|dias|mas grande|mas pequeno|mas rapido|mas largo|mas alto|unico|unica|puede|pueden|velocidad|temperatura|profundidad|altura|peso|especies|colores|planeta|sol|luna)\b/i;
+
+            for (const frase of oracionesRestantes) {
+                const huella = normalizarClave(frase).slice(0, 45);
+                if (huellasUsadas.has(huella)) continue;
+                if (patronesDatoInteresante.test(normalizarClave(frase))) {
+                    huellasUsadas.add(huella);
+                    candidatas.push(frase);
+                }
+            }
+
+            // 3. Completar con otras frases informativas distintas si hiciera falta
+            for (const frase of oracionesRestantes) {
+                if (candidatas.length >= 4) break;
+                const huella = normalizarClave(frase).slice(0, 45);
+                if (!huellasUsadas.has(huella)) {
+                    huellasUsadas.add(huella);
+                    candidatas.push(frase);
+                }
+            }
+
+            return candidatas.slice(0, 4);
+        }
+
+        function detectarContinenteYPais(titulo, texto) {
+            const t = normalizarClave(`${titulo} ${texto}`);
+            const paisesEncontrados = [];
+            const mapaPaises = [
+                ["espana", "España"], ["francia", "Francia"], ["italia", "Italia"],
+                ["alemania", "Alemania"], ["reino unido", "Reino Unido"], ["portugal", "Portugal"],
+                ["grecia", "Grecia"], ["egipto", "Egipto"], ["kenia", "Kenia"],
+                ["tanzania", "Tanzania"], ["marruecos", "Marruecos"], ["sudafrica", "Sudáfrica"],
+                ["brasil", "Brasil"], ["peru", "Perú"], ["colombia", "Colombia"],
+                ["argentina", "Argentina"], ["chile", "Chile"], ["mexico", "México"],
+                ["estados unidos", "Estados Unidos"], ["canada", "Canadá"],
+                ["china", "China"], ["japon", "Japón"], ["india", "India"],
+                ["australia", "Australia"], ["antartida", "Antártida"]
+            ];
+
+            for (const [clave, nombre] of mapaPaises) {
+                if (new RegExp(`\\b${clave}\\b`).test(t) && !paisesEncontrados.includes(nombre)) {
+                    paisesEncontrados.push(nombre);
+                }
+            }
+
+            const listaPaisesTexto = paisesEncontrados.slice(0, 3).join(", ");
+
+            if (/\b(espana|madrid|barcelona|francia|paris|italia|roma|alemania|londres|reino unido|portugal|grecia|europa|europeo)\b/.test(t)) {
+                return { continente: "Europa", pais: listaPaisesTexto || "Países de Europa" };
+            }
+            if (/\b(egipto|kenia|tanzania|marruecos|sudafrica|sahara|nilo|africa|africano)\b/.test(t)) {
+                return { continente: "África", pais: listaPaisesTexto || "Países de África" };
+            }
+            if (/\b(brasil|peru|colombia|argentina|chile|amazonas|andes|america del sur|sudamerica)\b/.test(t)) {
+                return { continente: "América del Sur", pais: listaPaisesTexto || "Países de América del Sur" };
+            }
+            if (/\b(estados unidos|mexico|canada|america del norte|norteamerica)\b/.test(t)) {
+                return { continente: "América del Norte", pais: listaPaisesTexto || "Países de América del Norte" };
+            }
+            if (/\b(china|japon|india|rusia|himalaya|asia|asiatico)\b/.test(t)) {
+                return { continente: "Asia", pais: listaPaisesTexto || "Países de Asia" };
+            }
+            if (/\b(australia|nueva zelanda|oceania)\b/.test(t)) {
+                return { continente: "Oceanía", pais: listaPaisesTexto || "Australia y Oceanía" };
+            }
+            if (/\b(antartida|polo sur|pinguino emperador)\b/.test(t)) {
+                return { continente: "Antártida", pais: "Región Polar Antártica" };
+            }
+            if (/\b(oceano|oceanos|marino|marina|ballena|tiburon|delfin|arrecife)\b/.test(t)) {
+                return { continente: "Todo el mundo", pais: listaPaisesTexto || "Mares y océanos del planeta" };
+            }
+            if (/\b(planeta|sol|luna|estrella|galaxia|universo|espacio|astronomia|saturno|jupiter|marte)\b/.test(t)) {
+                return { continente: "Todo el mundo", pais: "Espacio Exterior / Universo" };
+            }
+            return { continente: "Todo el mundo", pais: listaPaisesTexto || "Diversos lugares del planeta" };
+        }
+
+        function detectarEtiquetasPrimaria(texto, origen) {
+            const t = normalizarClave(texto);
+            const etiquetas = [origen, "Lectura Fácil"];
+            if (/\b(mamifero)\b/.test(t)) etiquetas.push("Mamífero");
+            if (/\b(ave|pajaro|plumas)\b/.test(t)) etiquetas.push("Ave");
+            if (/\b(reptil|escama|dinosaurio)\b/.test(t)) etiquetas.push("Reptil");
+            if (/\b(pez|peces|branquias|oceano|marino)\b/.test(t)) etiquetas.push("Vida Acuática");
+            if (/\b(insecto|polen|colmena)\b/.test(t)) etiquetas.push("Insecto");
+            if (/\b(herbivoro)\b/.test(t)) etiquetas.push("Herbívoro");
+            if (/\b(carnivoro)\b/.test(t)) etiquetas.push("Carnívoro");
+            if (/\b(planeta|sol|luna|estrella|espacio|astronomia)\b/.test(t)) etiquetas.push("El Universo");
+            if (/\b(rio|montana|pais|continente|mar|isla|volcan|desierto)\b/.test(t)) etiquetas.push("Geografía");
+            if (/\b(historia|antiguo|siglo|monumento|castillo|rey|faraon|invento)\b/.test(t)) etiquetas.push("Historia y Cultura");
+            if (/\b(planta|arbol|flor|fruto|bosque|fotosintesis)\b/.test(t)) etiquetas.push("Naturaleza y Plantas");
+
+            return etiquetas.slice(0, 4);
+        }
+
+        function adaptarTextoParaPrimaria(titulo, textoCompleto, imagenUrl, fuenteNombre) {
+            const secciones = extraerSeccionesArticulo(textoCompleto);
+
+            const oracionesIntro = dividirEnOracionesCortas(secciones.intro);
+            const oracionesCuerpo = dividirEnOracionesCortas(secciones.cuerpo);
+            const oracionesCuriosidadesSec = dividirEnOracionesCortas(secciones.curiosidades);
+
+            // Combinar introducción + secciones principales sin duplicados
+            const todasInformacion = [...oracionesIntro];
+            const huellas = new Set(todasInformacion.map(o => normalizarClave(o).slice(0, 45)));
+
+            for (const frase of oracionesCuerpo) {
+                const huella = normalizarClave(frase).slice(0, 45);
+                if (!huellas.has(huella)) {
+                    huellas.add(huella);
+                    todasInformacion.push(frase);
+                }
+            }
+
+            if (todasInformacion.length === 0) return null;
+
+            // Seleccionar entre 10 y 12 oraciones principales claras y ordenadas
+            const oracionesPrincipales = todasInformacion.slice(0, 11);
+            const oracionesRestantes = todasInformacion.slice(11);
+
+            // Construir 3 o 4 curiosidades reales y específicas del tema
+            const curiosidades = construirCuriosidadesEspecificas(
+                titulo,
+                oracionesCuriosidadesSec,
+                oracionesRestantes,
+                oracionesPrincipales
+            );
+
+            // Si el artículo era muy corto y dejó menos de 2 curiosidades extra, mover las últimas 2 oraciones a curiosidades
+            if (curiosidades.length < 2 && oracionesPrincipales.length >= 6) {
+                const extra1 = oracionesPrincipales.pop();
+                const extra2 = oracionesPrincipales.pop();
+                if (extra2) curiosidades.push(extra2);
+                if (extra1) curiosidades.push(extra1);
+            }
+
+            const textoUnido = `${secciones.intro} ${secciones.cuerpo}`;
+            const ubicacion = detectarContinenteYPais(titulo, textoUnido);
+            const caracteristicas = detectarEtiquetasPrimaria(textoUnido, fuenteNombre);
+
+            return {
+                titulo: titulo,
+                pais: ubicacion.pais,
+                continente: ubicacion.continente,
+                caracteristicas: caracteristicas,
+                oraciones: oracionesPrincipales,
+                curiosidades: curiosidades.length > 0 ? curiosidades : [
+                    `${titulo} es un tema fascinante que estudiamos en Ciencias y Cultura General.`
+                ],
+                busquedaImagen: titulo,
+                imagenDirecta: imagenUrl ? { url: imagenUrl, fuente: fuenteNombre } : null,
+                websRecomendadas: websEducativasBase
+            };
+        }
+
+        // Consulta en 2 pasos rápidos: busca el artículo exacto y descarga el texto completo (hasta 6000 caracteres)
+        async function consultarMediaWikiCompleto(baseUrl, fuenteNombre, consulta) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 6000);
+            try {
+                // Paso 1: Encontrar la página mejor coincidente y su imagen principal
+                const searchUrl = `${baseUrl}?action=query&generator=search&gsrsearch=${encodeURIComponent(consulta)}&gsrlimit=4&prop=pageimages|pageprops&pithumbsize=800&format=json&origin=*`;
+                const resSearch = await fetch(searchUrl, { signal: controller.signal });
+                if (!resSearch.ok) {
+                    clearTimeout(timer);
+                    return null;
+                }
+                const dataSearch = await resSearch.json();
+                if (!dataSearch.query || !dataSearch.query.pages) {
+                    clearTimeout(timer);
+                    return null;
+                }
+
+                const pages = Object.values(dataSearch.query.pages).sort((a, b) => (a.index || 0) - (b.index || 0));
+                const paginaValida = pages.find(p => !(p.pageprops && p.pageprops.disambiguation !== undefined));
+                if (!paginaValida) {
+                    clearTimeout(timer);
+                    return null;
+                }
+
+                const thumb = paginaValida.thumbnail && paginaValida.thumbnail.source ? paginaValida.thumbnail.source : null;
+
+                // Paso 2: Descargar el texto completo de ese artículo (sin exintro=1 para traer todas las secciones)
+                const extractUrl = `${baseUrl}?action=query&pageids=${paginaValida.pageid}&prop=extracts&exchars=6000&explaintext=1&exlimit=1&format=json&origin=*`;
+                const resExtract = await fetch(extractUrl, { signal: controller.signal });
+                clearTimeout(timer);
+                if (!resExtract.ok) return null;
+
+                const dataExtract = await resExtract.json();
+                const pageCompleta = dataExtract?.query?.pages?.[paginaValida.pageid];
+                if (!pageCompleta || !pageCompleta.extract || pageCompleta.extract.trim().length < 80) {
+                    return null;
+                }
+
+                return adaptarTextoParaPrimaria(pageCompleta.title, pageCompleta.extract, thumb, fuenteNombre);
+            } catch (e) {
+                clearTimeout(timer);
+                return null;
+            }
+        }
+
+        async function obtenerFichaEducativa(query) {
+            const clave = normalizarClave(query);
+            const claveCurada = fichasCuradasPrimaria[clave] ? clave : aliasFichas[clave];
+
+            if (claveCurada && fichasCuradasPrimaria[claveCurada]) {
+                return {
+                    ...fichasCuradasPrimaria[claveCurada],
+                    websRecomendadas: websEducativasBase
+                };
+            }
+
+            if (memoriaCacheBusquedas[clave]) {
+                return memoriaCacheBusquedas[clave];
+            }
+
+            // 1. Buscar primero en Vikidia en Español (enciclopedia infantil escrita para niños)
+            let ficha = await consultarMediaWikiCompleto("https://es.vikidia.org/w/api.php", "Vikidia Infantil", query);
+
+            // 2. Si no existe o es muy breve, buscar el artículo completo en Wikipedia en Español y adaptarlo
+            if (!ficha || ficha.oraciones.length < 5) {
+                const fichaWiki = await consultarMediaWikiCompleto("https://es.wikipedia.org/w/api.php", "Enciclopedia Escolar", query);
+                if (fichaWiki && (!ficha || fichaWiki.oraciones.length > ficha.oraciones.length)) {
+                    ficha = fichaWiki;
+                }
+            }
+
+            if (!ficha) {
+                throw new Error("Prueba con una palabra más sencilla (por ejemplo: «Jirafa», «Volcán», «Abeja» o «España»).");
+            }
+
+            memoriaCacheBusquedas[clave] = ficha;
+            return ficha;
+        }
+
+        // Búsqueda de imágenes multi-web
+        async function buscarImagenMultifuente(busquedaTermino, queryOriginal) {
+            const cleanTerm = (queryOriginal || "").replace(/[^\w\sáéíóúÁÉÍÓÚñÑ]/g, '').trim();
+            const searchTerms = [busquedaTermino, cleanTerm, queryOriginal].filter(Boolean);
+
+            for (const term of searchTerms) {
+                try {
+                    const wikiEsUrl = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(term)}&gsrlimit=3&prop=pageimages&pithumbsize=800&format=json&origin=*`;
+                    const res = await fetch(wikiEsUrl);
+                    const data = await res.json();
+                    if (data.query && data.query.pages) {
+                        const pages = Object.values(data.query.pages).sort((a, b) => (a.index || 0) - (b.index || 0));
+                        for (const page of pages) {
+                            if (page.thumbnail && page.thumbnail.source) {
+                                return { url: page.thumbnail.source, fuente: 'Wikipedia en Español' };
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            for (const term of searchTerms) {
+                try {
+                    const wikiEnUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(term)}&gsrlimit=3&prop=pageimages&pithumbsize=800&format=json&origin=*`;
+                    const res = await fetch(wikiEnUrl);
+                    const data = await res.json();
+                    if (data.query && data.query.pages) {
+                        const pages = Object.values(data.query.pages);
+                        for (const page of pages) {
+                            if (page.thumbnail && page.thumbnail.source) {
+                                return { url: page.thumbnail.source, fuente: 'Wikipedia Global' };
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            for (const term of searchTerms) {
+                try {
+                    const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(term)}&gsrnamespace=6&prop=imageinfo&iiprop=url|mime&format=json&origin=*&gsrlimit=5`;
+                    const res = await fetch(commonsUrl);
+                    const data = await res.json();
+                    if (data.query && data.query.pages) {
+                        const pages = Object.values(data.query.pages);
+                        for (const page of pages) {
+                            if (page.imageinfo && page.imageinfo[0]) {
+                                const info = page.imageinfo[0];
+                                if (info.mime && (info.mime.includes('jpeg') || info.mime.includes('png') || info.mime.includes('webp'))) {
+                                    return { url: info.url, fuente: 'Wikimedia Commons' };
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            return {
+                url: `https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80`,
+                fuente: 'Fotografía Educativa'
+            };
+        }
+
+        // Renderizar los datos devueltos en la interfaz
+        function renderizarResultados(queryOriginal, data, imageData) {
+            document.getElementById('loadingBox').classList.replace('flex', 'hidden');
+
+            document.getElementById('resultTitle').textContent = data.titulo || queryOriginal;
+            const imgEl = document.getElementById('mainImage');
+            imgEl.src = imageData.url;
+            document.getElementById('imageSourceBadge').textContent = imageData.fuente;
+            document.getElementById('imageCaption').textContent = `Fotografía real del tema ("${data.titulo || queryOriginal}")`;
+
+            document.getElementById('countrySpan').textContent = data.pais || "Todo el planeta";
+            document.getElementById('continentBadge').textContent = data.continente || "Global";
+            resaltarContinenteEnMapa(data.continente);
+
+            const featuresContainer = document.getElementById('featuresContainer');
+            featuresContainer.innerHTML = '';
+            if (data.caracteristicas && Array.isArray(data.caracteristicas)) {
+                data.caracteristicas.forEach(feat => {
+                    const badge = document.createElement('span');
+                    badge.className = "bg-emerald-100 text-emerald-900 font-extrabold px-3.5 py-1 rounded-full text-xs sm:text-sm border border-emerald-300 shadow-sm";
+                    badge.textContent = `⭐ ${feat}`;
+                    featuresContainer.appendChild(badge);
+                });
+            }
+
+            const sentencesList = document.getElementById('sentencesList');
+            sentencesList.innerHTML = '';
+            const listaOraciones = data.oraciones || [];
+            listaOraciones.forEach(oracion => {
+                const li = document.createElement('li');
+                li.className = "pl-2";
+                li.textContent = oracion;
+                sentencesList.appendChild(li);
+            });
+
+            const curiositiesGrid = document.getElementById('curiositiesGrid');
+            curiositiesGrid.innerHTML = '';
+            const emojis = ['🎈', '🚀', '🎨', '🦖', '🌟', '🧩'];
+
+            if (data.curiosidades && Array.isArray(data.curiosidades)) {
+                data.curiosidades.forEach((curio, i) => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white/90 backdrop-blur p-4 rounded-2xl border-2 border-amber-200 shadow-sm flex items-start gap-3";
+                    card.innerHTML = `
+                        <span class="text-2xl sm:text-3xl bg-amber-100 p-2 rounded-xl shrink-0">${emojis[i % emojis.length]}</span>
+                        <p class="text-sm sm:text-base font-bold text-slate-800 leading-snug">${curio}</p>
+                    `;
+                    curiositiesGrid.appendChild(card);
+                });
+            }
+
+            const webSourcesGrid = document.getElementById('webSourcesGrid');
+            webSourcesGrid.innerHTML = '';
+            const webs = data.websRecomendadas || websEducativasBase;
+
+            webs.forEach(w => {
+                const card = document.createElement('a');
+                card.href = w.url;
+                card.target = "_blank";
+                card.rel = "noopener noreferrer";
+                card.className = "bg-white p-4 rounded-2xl border-2 border-sky-200 hover:border-sky-400 hover:shadow-md transition flex flex-col justify-between group";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-black text-sky-800 text-base group-hover:text-sky-600 transition font-heading">${w.nombre}</h4>
+                            <span class="text-xs text-sky-500 font-extrabold">🔗 Abrir</span>
+                        </div>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-600">${w.descripcion}</p>
+                    </div>
+                `;
+                webSourcesGrid.appendChild(card);
+            });
+
+            document.getElementById('resultsPanel').classList.remove('hidden');
+        }
+
+        function resaltarContinenteEnMapa(nombreContinente) {
+            const globalNotice = document.getElementById('globalNotice');
+            globalNotice.classList.add('hidden');
+
+            document.querySelectorAll('.continent-path').forEach(path => {
+                path.classList.remove('highlighted');
+            });
+
+            if (!nombreContinente) return;
+
+            const contClean = nombreContinente.toLowerCase().trim();
+            const pathId = continentSvgMap[contClean];
+
+            if (pathId) {
+                const el = document.getElementById(pathId);
+                if (el) el.classList.add('highlighted');
+            } else {
+                document.querySelectorAll('.continent-path').forEach(p => p.classList.add('highlighted'));
+                globalNotice.classList.remove('hidden');
+            }
+        }
+
+        // Lectura por voz (Web Speech API)
+        function toggleLecturaVoz() {
+            if (!('speechSynthesis' in window)) {
+                const textEl = document.getElementById('audioText');
+                if (textEl) textEl.textContent = 'Voz no disponible';
+                return;
+            }
+
+            if (isSpeaking) {
+                detenerVoz();
+            } else {
+                iniciarVoz();
+            }
+        }
+
+        function iniciarVoz() {
+            if (!currentResultData) return;
+
+            window.speechSynthesis.cancel();
+
+            let texto = `${currentResultData.titulo}. `;
+            texto += `Se ubica en ${currentResultData.pais}, en ${currentResultData.continente}. `;
+
+            const lista = currentResultData.oraciones || [];
+            texto += lista.join(" ");
+
+            if (currentResultData.curiosidades) {
+                texto += " Datos curiosos. " + currentResultData.curiosidades.join(". ");
+            }
+
+            speechUtterance = new SpeechSynthesisUtterance(texto);
+            speechUtterance.lang = 'es-ES';
+            speechUtterance.rate = 0.85;
+            speechUtterance.pitch = 1.05;
+
+            const btn = document.getElementById('btnAudioTTS');
+            const icon = document.getElementById('audioIcon');
+            const text = document.getElementById('audioText');
+
+            speechUtterance.onstart = () => {
+                isSpeaking = true;
+                btn.classList.add('speaking-active', 'bg-rose-600');
+                btn.classList.remove('bg-pink-500');
+                icon.textContent = '🛑';
+                text.textContent = 'Detener Lectura';
+            };
+
+            speechUtterance.onend = () => { detenerVoz(); };
+            speechUtterance.onerror = () => { detenerVoz(); };
+
+            window.speechSynthesis.speak(speechUtterance);
+        }
+
+        function detenerVoz() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            isSpeaking = false;
+            const btn = document.getElementById('btnAudioTTS');
+            const icon = document.getElementById('audioIcon');
+            const text = document.getElementById('audioText');
+
+            if (btn && icon && text) {
+                btn.classList.remove('speaking-active', 'bg-rose-600');
+                btn.classList.add('bg-pink-500');
+                icon.textContent = '🔊';
+                text.textContent = '¡Escuchar!';
+            }
+        }
+    </script>
+</body>
+</html>
