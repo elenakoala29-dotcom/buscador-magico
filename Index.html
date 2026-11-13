@@ -59,7 +59,6 @@
             filter: drop-shadow(0px 4px 10px rgba(217, 119, 6, 0.6));
         }
 
-        /* Utilidad para ocultar scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -81,7 +80,6 @@
 
     <!-- Caja de Búsqueda y Botones Rápidos -->
     <section class="w-full max-w-3xl mb-8 flex flex-col items-center gap-4">
-        <!-- Input principal -->
         <div class="w-full bg-white p-3 sm:p-4 rounded-3xl sm:rounded-full shadow-xl border-4 border-emerald-300 flex flex-col sm:flex-row gap-3">
             <input type="text" id="searchInput" 
                 class="flex-1 text-lg sm:text-2xl px-5 py-3 sm:py-4 rounded-full border-2 border-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 font-bold text-slate-700 placeholder-slate-400"
@@ -127,10 +125,10 @@
     <!-- Panel de Resultados -->
     <main id="resultsPanel" class="hidden w-full max-w-5xl flex flex-col gap-8 mb-12">
         
-        <!-- Fila Superior: Fotografía Real Multi-Web + Mapa Mundi Vectorial -->
+        <!-- Fila Superior: Fotografía Real + Mapa Mundi Vectorial -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
             
-            <!-- Tarjeta 1: Foto Real desde Fuentes Diversas -->
+            <!-- Tarjeta 1: Foto Real -->
             <div class="md:col-span-5 bg-white rounded-3xl p-4 shadow-xl border-4 border-purple-200 flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-3 px-1">
                     <span class="bg-purple-100 text-purple-800 font-extrabold px-3.5 py-1 rounded-full text-xs sm:text-sm flex items-center gap-1.5 border border-purple-300">
@@ -166,23 +164,15 @@
                 <!-- Mapa Mundi SVG Ilustrativo -->
                 <div class="bg-sky-50 rounded-2xl p-3 border-2 border-sky-100 relative">
                     <svg viewBox="0 0 1000 500" class="w-full h-auto drop-shadow-sm" id="worldMapSvg">
-                        <!-- América del Norte -->
                         <path id="map-america-norte" class="continent-path" d="M120,60 Q180,40 280,60 Q340,110 260,180 Q200,240 180,260 Q140,230 100,160 Q80,100 120,60 Z" />
-                        <!-- América del Sur -->
                         <path id="map-america-sur" class="continent-path" d="M220,270 Q310,290 330,360 Q310,460 250,470 Q200,430 200,340 Z" />
-                        <!-- Europa -->
                         <path id="map-europa" class="continent-path" d="M440,60 Q540,50 600,100 Q560,170 480,170 Q430,130 440,60 Z" />
-                        <!-- África -->
                         <path id="map-africa" class="continent-path" d="M430,185 Q570,180 580,290 Q540,410 460,400 Q410,310 430,185 Z" />
-                        <!-- Asia -->
                         <path id="map-asia" class="continent-path" d="M605,60 Q850,50 920,160 Q850,280 670,260 Q570,220 605,60 Z" />
-                        <!-- Oceanía -->
                         <path id="map-oceania" class="continent-path" d="M760,310 Q880,300 910,380 Q840,450 760,410 Q730,360 760,310 Z" />
-                        <!-- Antártida -->
                         <path id="map-antartida" class="continent-path" d="M150,485 Q500,475 880,485 Q500,500 150,485 Z" />
                     </svg>
 
-                    <!-- Leyenda interactiva abajo del mapa -->
                     <div class="flex flex-wrap justify-center items-center gap-3 mt-2 text-xs sm:text-sm font-bold text-slate-600">
                         <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-amber-600 inline-block"></span> Zona Resaltada</span>
                         <span class="text-slate-400">|</span>
@@ -195,7 +185,6 @@
         <!-- Fila Media: Explicación en Oraciones Cortas + Asistente por Voz -->
         <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-emerald-200 relative">
             
-            <!-- Encabezado con título y Botón de Voz -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
                 <div>
                     <h2 id="resultTitle" class="text-3xl sm:text-5xl font-black text-emerald-700 capitalize font-heading">
@@ -204,7 +193,6 @@
                     <p id="fuenteLecturaSubtitle" class="text-slate-500 font-bold text-sm sm:text-base mt-1">Explicación adaptada en oraciones cortas para 2º de Primaria (7–8 años)</p>
                 </div>
                 
-                <!-- Botón TTS accesibilidad -->
                 <button onclick="toggleLecturaVoz()" id="btnAudioTTS" 
                     class="bg-pink-500 hover:bg-pink-600 active:scale-95 text-white font-extrabold px-6 py-3.5 rounded-full shadow-lg border-b-4 border-pink-700 transition flex items-center justify-center gap-3 text-lg sm:text-xl cursor-pointer self-start sm:self-auto shrink-0">
                     <span id="audioIcon" class="text-2xl">🔊</span>
@@ -218,7 +206,6 @@
             <!-- Bloque de Oraciones Numeradas -->
             <div class="bg-emerald-50/80 rounded-2xl p-5 sm:p-6 border-2 border-emerald-200">
                 <ol id="sentencesList" class="space-y-3.5 text-base sm:text-xl text-slate-800 font-bold leading-relaxed list-decimal list-inside">
-                    <!-- Oraciones dinámicas -->
                 </ol>
             </div>
         </div>
@@ -238,7 +225,6 @@
             </div>
 
             <div id="curiositiesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Tarjetas de datos curiosos -->
             </div>
         </div>
 
@@ -257,7 +243,6 @@
             </div>
 
             <div id="webSourcesGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <!-- Tarjetas de webs recomendadas -->
             </div>
         </div>
 
@@ -354,7 +339,175 @@
             }
         ];
 
-        // Fichas didácticas redactadas especialmente para 2º de Primaria (temas frecuentes de clase)
+        // Diccionario de pistas cuando un alumno escribe dos palabras (ej: "rosa flor", "marte planeta", "gato animal")
+        const diccionarioPistasCategoria = {
+            "flor": {
+                etiqueta: "Planta con Flor",
+                positivas: ["flor", "flores", "planta", "plantas", "arbusto", "petalo", "petalos", "jardin", "aroma", "perfume", "tallo", "hojas", "semilla", "polen"],
+                negativas: ["cantante", "actriz", "actor", "futbolista", "politico", "nacido", "fallecido", "album", "cancion", "pelicula", "telenovela", "apellido", "color"],
+                sufijoImagen: "flor"
+            },
+            "flores": {
+                etiqueta: "Planta con Flor",
+                positivas: ["flor", "flores", "planta", "plantas", "arbusto", "petalo", "petalos", "jardin", "aroma", "tallo", "hojas"],
+                negativas: ["cantante", "actriz", "actor", "album", "cancion", "pelicula", "telenovela", "color"],
+                sufijoImagen: "flor"
+            },
+            "planta": {
+                etiqueta: "Planta",
+                positivas: ["planta", "plantas", "hojas", "raiz", "tallo", "flor", "fruto", "semilla", "jardin", "bosque", "fotosintesis"],
+                negativas: ["fabrica", "edificio", "cantante", "actor", "pelicula", "cancion"],
+                sufijoImagen: "planta"
+            },
+            "arbol": {
+                etiqueta: "Árbol",
+                positivas: ["arbol", "arboles", "tronco", "ramas", "hojas", "bosque", "madera", "fruto", "raiz", "corteza"],
+                negativas: ["genealogico", "cantante", "actor", "pelicula", "cancion"],
+                sufijoImagen: "árbol"
+            },
+            "fruta": {
+                etiqueta: "Fruta y Alimento",
+                positivas: ["fruta", "fruto", "comestible", "alimento", "dulce", "semillas", "arbol", "vitamina", "cosecha", "sabor"],
+                negativas: ["ciudad", "provincia", "cantante", "actor", "empresa", "telefono", "ordenador"],
+                sufijoImagen: "fruta"
+            },
+            "animal": {
+                etiqueta: "Animal",
+                positivas: ["animal", "animales", "especie", "mamifero", "ave", "pez", "reptil", "insecto", "habita", "vive", "alimenta", "crias", "pelaje", "plumas"],
+                negativas: ["herramienta", "informatica", "ordenador", "cantante", "actor", "pelicula", "cancion", "constelacion", "signo"],
+                sufijoImagen: "animal"
+            },
+            "ave": {
+                etiqueta: "Ave",
+                positivas: ["ave", "aves", "pajaro", "plumas", "alas", "pico", "nido", "huevos", "volar", "vuelo"],
+                negativas: ["cantante", "actor", "pelicula", "cancion", "empresa"],
+                sufijoImagen: "ave"
+            },
+            "pajaro": {
+                etiqueta: "Ave",
+                positivas: ["ave", "aves", "pajaro", "plumas", "alas", "pico", "nido", "huevos", "volar"],
+                negativas: ["cantante", "actor", "pelicula", "cancion"],
+                sufijoImagen: "ave"
+            },
+            "pez": {
+                etiqueta: "Pez y Vida Marina",
+                positivas: ["pez", "peces", "mar", "oceano", "rio", "aletas", "branquias", "escamas", "nadar", "acuatico"],
+                negativas: ["signo", "constelacion", "cantante", "actor", "pelicula"],
+                sufijoImagen: "pez"
+            },
+            "insecto": {
+                etiqueta: "Insecto",
+                positivas: ["insecto", "insectos", "antenas", "alas", "patas", "larva", "polen", "colmena", "capullo"],
+                negativas: ["cantante", "actor", "pelicula", "cancion", "superheroe"],
+                sufijoImagen: "insecto"
+            },
+            "planeta": {
+                etiqueta: "Planeta del Sistema Solar",
+                positivas: ["planeta", "sol", "orbita", "sistema solar", "espacio", "astronomia", "atmosfera", "satelite", "lunas"],
+                negativas: ["mitologia", "dios", "romano", "griego", "elemento", "quimico", "cantante", "cancion"],
+                sufijoImagen: "planeta"
+            },
+            "estrella": {
+                etiqueta: "Estrella y Universo",
+                positivas: ["estrella", "sol", "espacio", "luz", "calor", "universo", "galaxia", "astronomia", "constelacion"],
+                negativas: ["moneda", "nota musical", "cantante", "actriz", "pelicula", "hotel"],
+                sufijoImagen: "estrella astronomía"
+            },
+            "rio": {
+                etiqueta: "Río y Geografía",
+                positivas: ["rio", "agua", "desemboca", "nace", "afluente", "valle", "cuenca", "cauces", "kilometros"],
+                negativas: ["cantante", "actor", "pelicula", "cancion", "apellido"],
+                sufijoImagen: "río"
+            },
+            "volcan": {
+                etiqueta: "Volcán y Geografía",
+                positivas: ["volcan", "lava", "crater", "erupcion", "magma", "montana", "ceniza", "altitud"],
+                negativas: ["cantante", "actor", "pelicula", "cancion"],
+                sufijoImagen: "volcán"
+            },
+            "montana": {
+                etiqueta: "Montaña y Geografía",
+                positivas: ["montana", "cumbre", "pico", "altitud", "cordillera", "nieve", "sierra", "metros"],
+                negativas: ["cantante", "actor", "pelicula", "cancion", "apellido"],
+                sufijoImagen: "montaña"
+            },
+            "pais": {
+                etiqueta: "País del Mundo",
+                positivas: ["pais", "capital", "habitantes", "territorio", "frontera", "idioma", "continente", "bandera"],
+                negativas: ["cantante", "actor", "pelicula", "cancion"],
+                sufijoImagen: "mapa bandera"
+            },
+            "ciudad": {
+                etiqueta: "Ciudad",
+                positivas: ["ciudad", "capital", "habitantes", "municipio", "barrios", "monumentos", "plaza", "provincia"],
+                negativas: ["fruta", "fruto", "cantante", "actor", "pelicula"],
+                sufijoImagen: "ciudad"
+            },
+            "instrumento": {
+                etiqueta: "Instrumento Musical",
+                positivas: ["instrumento", "musica", "musical", "sonido", "cuerdas", "viento", "percusion", "tocar", "notas"],
+                negativas: ["cirugia", "medico", "herramienta", "cantante"],
+                sufijoImagen: "instrumento musical"
+            },
+            "deporte": {
+                etiqueta: "Deporte",
+                positivas: ["deporte", "equipo", "jugadores", "pelota", "balon", "partido", "cancha", "campo", "juego"],
+                negativas: ["cantante", "actor", "pelicula"],
+                sufijoImagen: "deporte"
+            }
+        };
+
+        // Analiza lo que escribe el alumno para separar el tema de la pista (ej: "rosa flor" -> tema: "rosa", pista: "flor")
+        function analizarConsultaInfantil(queryOriginal) {
+            const sinArticulos = queryOriginal
+                .trim()
+                .replace(/^(el|la|los|las|un|una|unos|unas)\s+/i, "")
+                .trim();
+
+            const palabrasNorm = normalizarClave(sinArticulos).split(" ").filter(Boolean);
+            const palabrasRaw = sinArticulos.split(/\s+/).filter(Boolean);
+
+            let pista = null;
+            let clavePista = "";
+            let indicePista = -1;
+
+            if (palabrasNorm.length >= 2) {
+                const ultima = palabrasNorm[palabrasNorm.length - 1];
+                const primera = palabrasNorm[0];
+
+                if (diccionarioPistasCategoria[ultima]) {
+                    pista = diccionarioPistasCategoria[ultima];
+                    clavePista = ultima;
+                    indicePista = palabrasRaw.length - 1;
+                } else if (diccionarioPistasCategoria[primera]) {
+                    pista = diccionarioPistasCategoria[primera];
+                    clavePista = primera;
+                    indicePista = 0;
+                }
+            }
+
+            let terminoPrincipal = sinArticulos;
+            if (pista && indicePista !== -1) {
+                const restantes = palabrasRaw.filter((_, idx) => idx !== indicePista);
+                if (restantes.length > 0) {
+                    terminoPrincipal = restantes.join(" ").replace(/^(de|del|la|el|los|las)\s+/i, "").trim();
+                }
+            }
+
+            const tituloMostrar = terminoPrincipal.charAt(0).toUpperCase() + terminoPrincipal.slice(1);
+            const consultaImagen = pista ? `${terminoPrincipal} ${pista.sufijoImagen}` : terminoPrincipal;
+
+            return {
+                original: queryOriginal,
+                terminoPrincipal,
+                tituloMostrar,
+                pista,
+                clavePista,
+                consultaImagen
+            };
+        }
+
+        // Fichas didácticas preparadas especialmente para 2º de Primaria
         const fichasCuradasPrimaria = {
             "leon": {
                 titulo: "El León",
@@ -512,16 +665,19 @@
             "el leon": "leon",
             "leones": "leon",
             "los leones": "leon",
+            "leon animal": "leon",
             "piramides": "egipto y las piramides",
             "las piramides": "egipto y las piramides",
             "egipto": "egipto y las piramides",
             "el amazonas": "amazonas",
             "selva amazonica": "amazonas",
+            "rio amazonas": "amazonas",
             "la torre eiffel": "torre eiffel",
             "eiffel": "torre eiffel",
             "el canguro": "canguro",
             "canguros": "canguro",
             "los canguros": "canguro",
+            "canguro animal": "canguro",
             "los planetas": "planetas",
             "planeta": "planetas",
             "sistema solar": "planetas",
@@ -555,7 +711,7 @@
                 document.getElementById('resultsPanel').classList.add('hidden');
                 document.getElementById('loadingBox').classList.replace('flex', 'hidden');
                 document.getElementById('errorMessage').textContent = "¡Ups! Esa búsqueda no es adecuada para clase.";
-                document.getElementById('errorSubMessage').textContent = "Prueba a buscar un animal, un planeta, un país, un monumento o un invento.";
+                document.getElementById('errorSubMessage').textContent = "Prueba a buscar un animal, una flor, un planeta, un país o un invento.";
                 document.getElementById('errorBox').classList.remove('hidden');
                 return;
             }
@@ -565,12 +721,16 @@
             document.getElementById('loadingBox').classList.replace('hidden', 'flex');
 
             try {
-                const dataFicha = await obtenerFichaEducativa(query);
+                const consultaInfo = analizarConsultaInfantil(query);
+                const dataFicha = await obtenerFichaEducativa(consultaInfo);
                 currentResultData = dataFicha;
 
                 let imageData = dataFicha.imagenDirecta || null;
                 if (!imageData) {
-                    imageData = await buscarImagenMultifuente(dataFicha.busquedaImagen || query, query);
+                    imageData = await buscarImagenMultifuente(
+                        dataFicha.busquedaImagen || consultaInfo.consultaImagen,
+                        consultaInfo.consultaImagen
+                    );
                 }
 
                 renderizarResultados(query, dataFicha, imageData);
@@ -584,7 +744,7 @@
             }
         }
 
-        // Diccionario de adaptación vocabulario enciclopédico -> 2º de Primaria (7-8 años)
+        // Traduce vocabulario enciclopédico adulto a español claro para niños de 7-8 años
         function simplificarVocabularioPrimaria(frase) {
             let f = frase
                 .replace(/\[[^\]]*\]/g, "")
@@ -603,6 +763,9 @@
                 .replace(/\bprincipalmente\b/gi, "sobre todo")
                 .replace(/\bactualmente\b/gi, "hoy en día")
                 .replace(/\bgeneralmente\b/gi, "casi siempre")
+                .replace(/\bcomúnmente\b/gi, "normalmente")
+                .replace(/\bnumerosa(?:s)?\b/gi, "muchas")
+                .replace(/\bnumeroso(?:s)?\b/gi, "muchos")
                 .replace(/\bademás,\s*/gi, "También ")
                 .replace(/\bno obstante,\s*/gi, "Sin embargo, ")
                 .replace(/\bpor el contrario,\s*/gi, "En cambio, ")
@@ -618,6 +781,22 @@
             f = f.charAt(0).toUpperCase() + f.slice(1);
             if (!/[.!?]$/.test(f)) f += ".";
             return f;
+        }
+
+        // Filtra frases demasiado técnicas (latín, taxonomía o citas) para que no parezca texto adulto sin adaptar
+        function esFraseAptaParaNinos(frase) {
+            const norm = normalizarClave(frase);
+            if (norm.length < 25 || norm.length > 195) return false;
+            if (/^(del latin|del griego|etimologia|taxonomia|filogenia|sinonimia|vease|articulo principal|redirige|puede referirse)/i.test(norm)) {
+                return false;
+            }
+            if (/\b(subgenero|taxonomico|binomial|linneo|linnaeus|familia de las|orden de los)\b/i.test(norm)) {
+                return false;
+            }
+            // Evitar frases llenas de años sueltos o siglas técnicas
+            const numeros = frase.match(/\d+/g) || [];
+            if (numeros.length >= 4) return false;
+            return true;
         }
 
         // Divide oraciones largas y complejas en frases cortas fáciles de leer para 7-8 años
@@ -638,32 +817,29 @@
             for (const raw of iniciales) {
                 if (/puede referirse a|véase también|artículo principal|redirige aquí/i.test(raw)) continue;
 
-                // Dividir por punto y coma o conectores subordinados si la oración es larga
                 const subPartes = raw
                     .split(/;\s+|,\s+(?:el cual|la cual|los cuales|las cuales|lo cual|mientras que|sin embargo,|aunque\s)/i)
                     .map(p => p.trim())
                     .filter(Boolean);
 
                 for (let parte of subPartes) {
-                    // Si sigue siendo larga (> 135 caracteres), dividir en ", y " o ", donde "
-                    if (parte.length > 135 && /,\s+(?:y|donde)\s+/i.test(parte)) {
-                        const cortes = parte.split(/,\s+(?:y|donde)\s+/i);
+                    if (parte.length > 130 && /,\s+(?:y|donde|pero)\s+/i.test(parte)) {
+                        const cortes = parte.split(/,\s+(?:y|donde|pero)\s+/i);
                         for (let c of cortes) {
                             const adaptada = simplificarVocabularioPrimaria(c);
-                            if (adaptada.length >= 22 && adaptada.length <= 185) {
+                            if (esFraseAptaParaNinos(adaptada)) {
                                 resultado.push(adaptada);
                             }
                         }
                     } else {
                         const adaptada = simplificarVocabularioPrimaria(parte);
-                        if (adaptada.length >= 22 && adaptada.length <= 190) {
+                        if (esFraseAptaParaNinos(adaptada)) {
                             resultado.push(adaptada);
                         }
                     }
                 }
             }
 
-            // Eliminar duplicados manteniendo el orden
             const unicas = [];
             const vistas = new Set();
             for (const o of resultado) {
@@ -686,8 +862,8 @@
                 cuerpo: []
             };
 
-            const seccionesIgnoradas = /^(referencias|bibliografia|vease tambien|enlaces externos|notas|galeria|fuentes|literatura|filmografia)/;
-            const seccionesCuriosas = /(curiosidad|datos curiosos|record|sabias que|en la cultura|mitologia)/;
+            const seccionesIgnoradas = /^(referencias|bibliografia|vease tambien|enlaces externos|notas|galeria|fuentes|literatura|filmografia|taxonomia|etimologia|clasificacion)/;
+            const seccionesCuriosas = /(curiosidad|datos curiosos|record|sabias que|en la cultura|simbolismo|mitologia|usos|importancia)/;
 
             for (const lineaRaw of lineas) {
                 const linea = lineaRaw.trim();
@@ -717,12 +893,11 @@
             };
         }
 
-        // Construye 3 o 4 tarjetas de "¿Sabías que...?" con datos reales y concretos del tema
+        // Construye 3 o 4 tarjetas de "¿Sabías que...?" con datos concretos sobre el tema buscado
         function construirCuriosidadesEspecificas(titulo, oracionesCuriosidades, oracionesRestantes, oracionesPrincipales) {
             const huellasUsadas = new Set(oracionesPrincipales.map(o => normalizarClave(o).slice(0, 45)));
             const candidatas = [];
 
-            // 1. Prioridad máxima: frases que vengan de la sección "Curiosidades" del artículo
             for (const frase of oracionesCuriosidades) {
                 const huella = normalizarClave(frase).slice(0, 45);
                 if (!huellasUsadas.has(huella)) {
@@ -731,8 +906,7 @@
                 }
             }
 
-            // 2. Frases del resto del artículo que contengan datos sorprendentes, medidas, récords o capacidades
-            const patronesDatoInteresante = /\b(\d+|millon|millones|metro|metros|kilometro|kilometros|centimetro|kilo|kilos|tonelada|ano|anos|hora|horas|dia|dias|mas grande|mas pequeno|mas rapido|mas largo|mas alto|unico|unica|puede|pueden|velocidad|temperatura|profundidad|altura|peso|especies|colores|planeta|sol|luna)\b/i;
+            const patronesDatoInteresante = /\b(\d+|millon|millones|metro|metros|kilometro|kilometros|centimetro|kilo|kilos|tonelada|ano|anos|hora|horas|dia|dias|mas grande|mas pequeno|mas rapido|mas largo|mas alto|unico|unica|puede|pueden|velocidad|temperatura|profundidad|altura|peso|especies|colores|aroma|perfume|petalo|petalos|planeta|sol|luna|simbolo|antiguo|antigua)\b/i;
 
             for (const frase of oracionesRestantes) {
                 const huella = normalizarClave(frase).slice(0, 45);
@@ -743,7 +917,6 @@
                 }
             }
 
-            // 3. Completar con otras frases informativas distintas si hiciera falta
             for (const frase of oracionesRestantes) {
                 if (candidatas.length >= 4) break;
                 const huella = normalizarClave(frase).slice(0, 45);
@@ -809,9 +982,14 @@
             return { continente: "Todo el mundo", pais: listaPaisesTexto || "Diversos lugares del planeta" };
         }
 
-        function detectarEtiquetasPrimaria(texto, origen) {
+        function detectarEtiquetasPrimaria(texto, origen, consultaInfo) {
             const t = normalizarClave(texto);
             const etiquetas = [origen, "Lectura Fácil"];
+            if (consultaInfo && consultaInfo.pista) {
+                etiquetas.push(consultaInfo.pista.etiqueta);
+            }
+            if (/\b(flor|flores|petalo|petalos|rosal)\b/.test(t)) etiquetas.push("Flor y Naturaleza");
+            if (/\b(planta|arbol|hojas|fruto|bosque|jardin)\b/.test(t)) etiquetas.push("Mundo Vegetal");
             if (/\b(mamifero)\b/.test(t)) etiquetas.push("Mamífero");
             if (/\b(ave|pajaro|plumas)\b/.test(t)) etiquetas.push("Ave");
             if (/\b(reptil|escama|dinosaurio)\b/.test(t)) etiquetas.push("Reptil");
@@ -822,19 +1000,17 @@
             if (/\b(planeta|sol|luna|estrella|espacio|astronomia)\b/.test(t)) etiquetas.push("El Universo");
             if (/\b(rio|montana|pais|continente|mar|isla|volcan|desierto)\b/.test(t)) etiquetas.push("Geografía");
             if (/\b(historia|antiguo|siglo|monumento|castillo|rey|faraon|invento)\b/.test(t)) etiquetas.push("Historia y Cultura");
-            if (/\b(planta|arbol|flor|fruto|bosque|fotosintesis)\b/.test(t)) etiquetas.push("Naturaleza y Plantas");
 
-            return etiquetas.slice(0, 4);
+            return [...new Set(etiquetas)].slice(0, 4);
         }
 
-        function adaptarTextoParaPrimaria(titulo, textoCompleto, imagenUrl, fuenteNombre) {
+        function adaptarTextoParaPrimaria(tituloArticulo, textoCompleto, imagenUrl, fuenteNombre, consultaInfo) {
             const secciones = extraerSeccionesArticulo(textoCompleto);
 
             const oracionesIntro = dividirEnOracionesCortas(secciones.intro);
             const oracionesCuerpo = dividirEnOracionesCortas(secciones.cuerpo);
             const oracionesCuriosidadesSec = dividirEnOracionesCortas(secciones.curiosidades);
 
-            // Combinar introducción + secciones principales sin duplicados
             const todasInformacion = [...oracionesIntro];
             const huellas = new Set(todasInformacion.map(o => normalizarClave(o).slice(0, 45)));
 
@@ -848,19 +1024,16 @@
 
             if (todasInformacion.length === 0) return null;
 
-            // Seleccionar entre 10 y 12 oraciones principales claras y ordenadas
-            const oracionesPrincipales = todasInformacion.slice(0, 11);
-            const oracionesRestantes = todasInformacion.slice(11);
+            const oracionesPrincipales = todasInformacion.slice(0, 10);
+            const oracionesRestantes = todasInformacion.slice(10);
 
-            // Construir 3 o 4 curiosidades reales y específicas del tema
             const curiosidades = construirCuriosidadesEspecificas(
-                titulo,
+                tituloArticulo,
                 oracionesCuriosidadesSec,
                 oracionesRestantes,
                 oracionesPrincipales
             );
 
-            // Si el artículo era muy corto y dejó menos de 2 curiosidades extra, mover las últimas 2 oraciones a curiosidades
             if (curiosidades.length < 2 && oracionesPrincipales.length >= 6) {
                 const extra1 = oracionesPrincipales.pop();
                 const extra2 = oracionesPrincipales.pop();
@@ -869,31 +1042,66 @@
             }
 
             const textoUnido = `${secciones.intro} ${secciones.cuerpo}`;
-            const ubicacion = detectarContinenteYPais(titulo, textoUnido);
-            const caracteristicas = detectarEtiquetasPrimaria(textoUnido, fuenteNombre);
+            const ubicacion = detectarContinenteYPais(tituloArticulo, textoUnido);
+            const caracteristicas = detectarEtiquetasPrimaria(textoUnido, fuenteNombre, consultaInfo);
+
+            // Si el alumno buscó "rosa flor", mostramos un título claro y bonito como "La Rosa" o "Rosa"
+            const tituloLimpio = tituloArticulo.replace(/\s*\([^)]*\)\s*/g, "").trim();
 
             return {
-                titulo: titulo,
+                titulo: tituloLimpio,
                 pais: ubicacion.pais,
                 continente: ubicacion.continente,
                 caracteristicas: caracteristicas,
                 oraciones: oracionesPrincipales,
                 curiosidades: curiosidades.length > 0 ? curiosidades : [
-                    `${titulo} es un tema fascinante que estudiamos en Ciencias y Cultura General.`
+                    `${tituloLimpio} es un tema muy interesante que estudiamos en clase.`
                 ],
-                busquedaImagen: titulo,
+                busquedaImagen: consultaInfo ? consultaInfo.consultaImagen : tituloLimpio,
                 imagenDirecta: imagenUrl ? { url: imagenUrl, fuente: fuenteNombre } : null,
                 websRecomendadas: websEducativasBase
             };
         }
 
-        // Consulta en 2 pasos rápidos: busca el artículo exacto y descarga el texto completo (hasta 6000 caracteres)
-        async function consultarMediaWikiCompleto(baseUrl, fuenteNombre, consulta) {
+        // Evalúa qué artículo encaja mejor con la búsqueda del niño (usando la pista de categoría si existe)
+        function puntuarCandidatoArticulo(page, consultaInfo) {
+            const tituloNorm = normalizarClave(page.title || "");
+            const extractNorm = normalizarClave((page.extract || "").slice(0, 900));
+            const terminoNorm = normalizarClave(consultaInfo.terminoPrincipal);
+
+            let puntos = 0;
+
+            // Coincidencia exacta con el tema principal (ej: "rosa" === "rosa")
+            if (tituloNorm === terminoNorm) puntos += 35;
+            else if (tituloNorm.startsWith(terminoNorm + " ")) puntos += 15;
+            else if (tituloNorm.includes(terminoNorm)) puntos += 8;
+
+            // Si el alumno dio una pista (ej: "flor", "planeta", "animal"), premiamos artículos de esa categoría
+            if (consultaInfo.pista) {
+                for (const pos of consultaInfo.pista.positivas) {
+                    if (tituloNorm.includes(pos)) puntos += 14;
+                    if (new RegExp(`\\b${pos}\\b`).test(extractNorm)) puntos += 6;
+                }
+                for (const neg of consultaInfo.pista.negativas) {
+                    if (tituloNorm.includes(neg)) puntos -= 30;
+                    if (new RegExp(`\\b${neg}\\b`).test(extractNorm)) puntos -= 22;
+                }
+            }
+
+            // Premiar artículos con contenido suficiente para niños
+            if ((page.extract || "").length > 400) puntos += 6;
+            if (page.thumbnail && page.thumbnail.source) puntos += 4;
+
+            return puntos;
+        }
+
+        // Busca los mejores candidatos y descarga el texto completo del artículo correcto
+        async function consultarMediaWikiInteligente(baseUrl, fuenteNombre, consultaInfo) {
             const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 6000);
+            const timer = setTimeout(() => controller.abort(), 6500);
             try {
-                // Paso 1: Encontrar la página mejor coincidente y su imagen principal
-                const searchUrl = `${baseUrl}?action=query&generator=search&gsrsearch=${encodeURIComponent(consulta)}&gsrlimit=4&prop=pageimages|pageprops&pithumbsize=800&format=json&origin=*`;
+                // Buscamos por el tema principal ("rosa") para traer todos sus significados y elegir el correcto
+                const searchUrl = `${baseUrl}?action=query&generator=search&gsrsearch=${encodeURIComponent(consultaInfo.terminoPrincipal)}&gsrlimit=6&prop=extracts|pageimages|pageprops&exintro=1&explaintext=1&pithumbsize=800&format=json&origin=*`;
                 const resSearch = await fetch(searchUrl, { signal: controller.signal });
                 if (!resSearch.ok) {
                     clearTimeout(timer);
@@ -905,37 +1113,56 @@
                     return null;
                 }
 
-                const pages = Object.values(dataSearch.query.pages).sort((a, b) => (a.index || 0) - (b.index || 0));
-                const paginaValida = pages.find(p => !(p.pageprops && p.pageprops.disambiguation !== undefined));
-                if (!paginaValida) {
+                const candidatas = Object.values(dataSearch.query.pages).filter(p => {
+                    if (p.pageprops && p.pageprops.disambiguation !== undefined) return false;
+                    if (!p.extract || p.extract.trim().length < 60) return false;
+                    if (/puede referirse a:/i.test(p.extract)) return false;
+                    return true;
+                });
+
+                if (candidatas.length === 0) {
                     clearTimeout(timer);
                     return null;
                 }
 
-                const thumb = paginaValida.thumbnail && paginaValida.thumbnail.source ? paginaValida.thumbnail.source : null;
+                // Ordenar por relevancia real respecto a la pista del alumno
+                candidatas.sort((a, b) => puntuarCandidatoArticulo(b, consultaInfo) - puntuarCandidatoArticulo(a, consultaInfo));
+                const mejorPagina = candidatas[0];
 
-                // Paso 2: Descargar el texto completo de ese artículo (sin exintro=1 para traer todas las secciones)
-                const extractUrl = `${baseUrl}?action=query&pageids=${paginaValida.pageid}&prop=extracts&exchars=6000&explaintext=1&exlimit=1&format=json&origin=*`;
+                // Si hubo pista y el mejor candidato tiene puntuación muy negativa, descartar esta fuente
+                if (consultaInfo.pista && puntuarCandidatoArticulo(mejorPagina, consultaInfo) < -10) {
+                    clearTimeout(timer);
+                    return null;
+                }
+
+                const thumb = mejorPagina.thumbnail && mejorPagina.thumbnail.source ? mejorPagina.thumbnail.source : null;
+
+                // Descargar el texto completo del artículo elegido (todas sus secciones)
+                const extractUrl = `${baseUrl}?action=query&pageids=${mejorPagina.pageid}&prop=extracts&exchars=7000&explaintext=1&exlimit=1&format=json&origin=*`;
                 const resExtract = await fetch(extractUrl, { signal: controller.signal });
                 clearTimeout(timer);
                 if (!resExtract.ok) return null;
 
                 const dataExtract = await resExtract.json();
-                const pageCompleta = dataExtract?.query?.pages?.[paginaValida.pageid];
+                const pageCompleta = dataExtract?.query?.pages?.[mejorPagina.pageid];
                 if (!pageCompleta || !pageCompleta.extract || pageCompleta.extract.trim().length < 80) {
                     return null;
                 }
 
-                return adaptarTextoParaPrimaria(pageCompleta.title, pageCompleta.extract, thumb, fuenteNombre);
+                return adaptarTextoParaPrimaria(pageCompleta.title, pageCompleta.extract, thumb, fuenteNombre, consultaInfo);
             } catch (e) {
                 clearTimeout(timer);
                 return null;
             }
         }
 
-        async function obtenerFichaEducativa(query) {
-            const clave = normalizarClave(query);
-            const claveCurada = fichasCuradasPrimaria[clave] ? clave : aliasFichas[clave];
+        async function obtenerFichaEducativa(consultaInfo) {
+            const claveOriginal = normalizarClave(consultaInfo.original);
+            const clavePrincipal = normalizarClave(consultaInfo.terminoPrincipal);
+
+            const claveCurada = fichasCuradasPrimaria[claveOriginal]
+                ? claveOriginal
+                : (aliasFichas[claveOriginal] || (fichasCuradasPrimaria[clavePrincipal] ? clavePrincipal : aliasFichas[clavePrincipal]));
 
             if (claveCurada && fichasCuradasPrimaria[claveCurada]) {
                 return {
@@ -944,33 +1171,34 @@
                 };
             }
 
-            if (memoriaCacheBusquedas[clave]) {
-                return memoriaCacheBusquedas[clave];
+            const cacheKey = `${clavePrincipal}_${consultaInfo.clavePista}`;
+            if (memoriaCacheBusquedas[cacheKey]) {
+                return memoriaCacheBusquedas[cacheKey];
             }
 
-            // 1. Buscar primero en Vikidia en Español (enciclopedia infantil escrita para niños)
-            let ficha = await consultarMediaWikiCompleto("https://es.vikidia.org/w/api.php", "Vikidia Infantil", query);
+            // 1. Buscar primero en Vikidia Infantil (enciclopedia escrita para Primaria)
+            let ficha = await consultarMediaWikiInteligente("https://es.vikidia.org/w/api.php", "Vikidia Infantil", consultaInfo);
 
-            // 2. Si no existe o es muy breve, buscar el artículo completo en Wikipedia en Español y adaptarlo
+            // 2. Si no existe o tiene pocas frases, buscar en Wikipedia en Español y adaptar a lectura fácil
             if (!ficha || ficha.oraciones.length < 5) {
-                const fichaWiki = await consultarMediaWikiCompleto("https://es.wikipedia.org/w/api.php", "Enciclopedia Escolar", query);
+                const fichaWiki = await consultarMediaWikiInteligente("https://es.wikipedia.org/w/api.php", "Enciclopedia Escolar", consultaInfo);
                 if (fichaWiki && (!ficha || fichaWiki.oraciones.length > ficha.oraciones.length)) {
                     ficha = fichaWiki;
                 }
             }
 
             if (!ficha) {
-                throw new Error("Prueba con una palabra más sencilla (por ejemplo: «Jirafa», «Volcán», «Abeja» o «España»).");
+                throw new Error("Prueba con una palabra sencilla (por ejemplo: «Rosa», «Girasol», «Delfín» o «Volcán»).");
             }
 
-            memoriaCacheBusquedas[clave] = ficha;
+            memoriaCacheBusquedas[cacheKey] = ficha;
             return ficha;
         }
 
         // Búsqueda de imágenes multi-web
         async function buscarImagenMultifuente(busquedaTermino, queryOriginal) {
             const cleanTerm = (queryOriginal || "").replace(/[^\w\sáéíóúÁÉÍÓÚñÑ]/g, '').trim();
-            const searchTerms = [busquedaTermino, cleanTerm, queryOriginal].filter(Boolean);
+            const searchTerms = [...new Set([busquedaTermino, cleanTerm, queryOriginal].filter(Boolean))];
 
             for (const term of searchTerms) {
                 try {
@@ -1138,64 +1366,3 @@
             if (isSpeaking) {
                 detenerVoz();
             } else {
-                iniciarVoz();
-            }
-        }
-
-        function iniciarVoz() {
-            if (!currentResultData) return;
-
-            window.speechSynthesis.cancel();
-
-            let texto = `${currentResultData.titulo}. `;
-            texto += `Se ubica en ${currentResultData.pais}, en ${currentResultData.continente}. `;
-
-            const lista = currentResultData.oraciones || [];
-            texto += lista.join(" ");
-
-            if (currentResultData.curiosidades) {
-                texto += " Datos curiosos. " + currentResultData.curiosidades.join(". ");
-            }
-
-            speechUtterance = new SpeechSynthesisUtterance(texto);
-            speechUtterance.lang = 'es-ES';
-            speechUtterance.rate = 0.85;
-            speechUtterance.pitch = 1.05;
-
-            const btn = document.getElementById('btnAudioTTS');
-            const icon = document.getElementById('audioIcon');
-            const text = document.getElementById('audioText');
-
-            speechUtterance.onstart = () => {
-                isSpeaking = true;
-                btn.classList.add('speaking-active', 'bg-rose-600');
-                btn.classList.remove('bg-pink-500');
-                icon.textContent = '🛑';
-                text.textContent = 'Detener Lectura';
-            };
-
-            speechUtterance.onend = () => { detenerVoz(); };
-            speechUtterance.onerror = () => { detenerVoz(); };
-
-            window.speechSynthesis.speak(speechUtterance);
-        }
-
-        function detenerVoz() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
-            isSpeaking = false;
-            const btn = document.getElementById('btnAudioTTS');
-            const icon = document.getElementById('audioIcon');
-            const text = document.getElementById('audioText');
-
-            if (btn && icon && text) {
-                btn.classList.remove('speaking-active', 'bg-rose-600');
-                btn.classList.add('bg-pink-500');
-                icon.textContent = '🔊';
-                text.textContent = '¡Escuchar!';
-            }
-        }
-    </script>
-</body>
-</html>
