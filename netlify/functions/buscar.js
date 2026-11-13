@@ -22,15 +22,6 @@ export default async (req) => {
     .replace(/^["']|["']$/g, "")
     .trim();
 
-  if (!apiKey) {
-    return new Response(
-      JSON.stringify({
-        error: "La clave del buscador no está configurada en Netlify (GEMINI_API_KEY)."
-      }),
-      { status: 500, headers }
-    );
-  }
-
   let promptUsuario = "";
   try {
     const body = await req.json();
@@ -51,197 +42,245 @@ export default async (req) => {
 
   const encoder = new TextEncoder();
 
+  const detectarContinente = (texto) => {
+    const t = texto.toLowerCase();
+    if (t.includes("américa del norte") || t.includes("norteamérica") || t.includes("estados unidos") || t.includes("canadá") || t.includes("méxico")) return "América del Norte";
+    if (t.includes("américa del sur") || t.includes("sudamérica") || t.includes("amazonas") || t.includes("brasil") || t.includes("argentina") || t.includes("perú")) return "América del Sur";
+    if (t.includes("áfrica") || t.includes("africa") || t.includes("egipto") || t.includes("sabana") || t.includes("kenia")) return "África";
+    if (t.includes("europa") || t.includes("españa") || t.includes("francia") || t.includes("parís") || t.includes("italia")) return "Europa";
+    if (t.includes("asia") || t.includes("china") || t.includes("japón") || t.includes("india")) return "Asia";
+    if (t.includes("oceanía") || t.includes("oceania") || t.includes("australia") || t.includes("canguro")) return "Oceanía";
+    if (t.includes("antártida") || t.includes("antartida") || t.includes("polo sur")) return "Antártida";
+    return "Todo el mundo";
+  };
+
+  const websPorDefecto = [
+    {
+      nombre: "Vikidia - Enciclopedia Escolar",
+      descripcion: "Enciclopedia libre adaptada para niños de Primaria",
+      url: "https://es.vikidia.org"
+    },
+    {
+      nombre: "National Geographic Kids",
+      descripcion: "Artículos y fotos sobre animales, ciencia y naturaleza",
+      url: "https://kids.nationalgeographic.com"
+    },
+    {
+      nombre: "Wikimedia Commons",
+      descripcion: "Fotografías e ilustraciones educativas libres",
+      url: "https://commons.wikimedia.org"
+    }
+  ];
+
+  const parsearRespuestaGemini = (textoPlano) => {
+    const lineas = textoPlano.split("\n").map((l) => l.trim()).filter(Boolean);
+    let titulo = promptUsuario;
+    let pais = "Todo el planeta";
+    let continente = "";
+    let caracteristicas = ["2º de Primaria", "Lectura Fácil"];
+    const oraciones = [];
+    const curiosidades = [];
+    let busquedaImagen = promptUsuario;
+
+    for (const linea of lineas) {
+      if (/^TITULO:/i.test(linea)) {
+        titulo = linea.replace(/^TITULO:/i, "").trim() || titulo;
+      } else if (/^PAIS:/i.test(linea)) {
+        pais = linea.replace(/^PAIS:/i, "").trim() || pais;
+      } else if (/^CONTINENTE:/i.test(linea)) {
+        continente = linea.replace(/^CONTINENTE:/i, "").trim();
+      } else if (/^ETIQUETAS:/i.test(linea)) {
+        const lista = linea
+          .replace(/^ETIQUETAS:/i, "")
+          .split(",")
+          .map((e) => e.trim())
+          .filter(Boolean);
+        if (lista.length > 0) caracteristicas = lista.slice(0, 4);
+      } else if (/^IMAGEN:/i.test(linea)) {
+        busquedaImagen = linea.replace(/^IMAGEN:/i, "").trim() || busquedaImagen;
+      } else if (/^-\s+/.test(linea)) {
+        oraciones.push(linea.replace(/^-\s+/, "").trim());
+      } else if (/^\*\s+/.test(linea)) {
+        curiosidades.push(linea.replace(/^\*\s+/, "").trim());
+      }
+    }
+
+    if (oraciones.length === 0) {
+      const sueltas = textoPlano
+        .split(/(?<=[.!?])\s+/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 15 && !/^(TITULO|PAIS|CONTINENTE|ETIQUETAS|IMAGEN):/i.test(s));
+      oraciones.push(...sueltas.slice(0, 10));
+    }
+
+    if (curiosidades.length === 0) {
+      curiosidades.push(
+        "Es un tema muy interesante para investigar y comentar en clase.",
+        "Puedes pulsar el botón rosa de arriba para escuchar toda la ficha en voz alta."
+      );
+    }
+
+    return {
+      titulo,
+      pais,
+      continente: continente || detectarContinente(`${titulo} ${pais} ${oraciones.join(" ")}`),
+      caracteristicas,
+      oraciones,
+      curiosidades,
+      busquedaImagen,
+      websRecomendadas: websPorDefecto
+    };
+  };
+
+  const buscarEnWikipedia = async (consulta) => {
+    const wikiUrl = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(consulta)}&gsrlimit=2&prop=extracts&exintro=1&explaintext=1&format=json`;
+    const res = await fetch(wikiUrl, {
+      headers: { "User-Agent": "BuscadorMagicoPrimaria/1.0 (educacion-primaria)" }
+    });
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const pages = data?.query?.pages ? Object.values(data.query.pages) : [];
+    pages.sort((a, b) => (a.index || 0) - (b.index || 0));
+
+    const articulo = pages.find((p) => p.extract && p.extract.trim().length > 60);
+    if (!articulo) return null;
+
+    const textoLimpio = articulo.extract
+      .replace(/\([^)]*\)/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const todasOraciones = textoLimpio
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 20 && s.length < 220);
+
+    if (todasOraciones.length === 0) return null;
+
+    const oraciones = todasOraciones.slice(0, 8);
+    const curiosidades = todasOraciones.slice(8, 11);
+    if (curiosidades.length === 0) {
+      curiosidades.push(
+        "Este resumen está adaptado de la enciclopedia libre para que sea fácil de leer en clase.",
+        "Usa el botón rosa de ¡Escuchar! para oír la lectura paso a paso."
+      );
+    }
+
+    const continente = detectarContinente(`${articulo.title} ${textoLimpio}`);
+
+    return {
+      titulo: articulo.title || consulta,
+      pais: continente === "Todo el mundo" ? "Varios lugares del mundo" : `Regiones de ${continente}`,
+      continente,
+      caracteristicas: ["Enciclopedia Escolar", "2º de Primaria", "Lectura Fácil"],
+      oraciones,
+      curiosidades,
+      busquedaImagen: articulo.title || consulta,
+      websRecomendadas: websPorDefecto
+    };
+  };
+
   const stream = new ReadableStream({
     async start(controller) {
-      // Mantiene abierta la conexión desde el segundo 0 para evitar cortes de Netlify
       controller.enqueue(encoder.encode(" "));
-
       const keepAlive = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(" "));
-        } catch (e) {
-          // Ignorar si la conexión ya cerró
-        }
+        } catch (e) {}
       }, 2000);
 
       try {
-        const promptCompleto = `Docente de 2º de Primaria (7-8 años). Tema: "${promptUsuario}".
-Responde en español muy claro, educativo y seguro para niños, SOLO con este JSON válido:
-{
-  "titulo": "Nombre claro del tema",
-  "pais": "País o países principales (o 'Todo el planeta')",
-  "continente": "América del Norte | América del Sur | Europa | África | Asia | Oceanía | Antártida | Todo el mundo",
-  "caracteristicas": ["Etiqueta 1", "Etiqueta 2", "Etiqueta 3"],
-  "oraciones": ["Oración 1 corta.", "Oración 2 corta."],
-  "curiosidades": ["Curiosidad 1 breve.", "Curiosidad 2 breve.", "Curiosidad 3 breve."],
-  "busquedaImagen": "término exacto para foto en Wikipedia"
-}
-Reglas: 8 a 10 oraciones cortas (máximo 12 palabras cada una) sobre qué es, cómo es y dónde vive o está. 3 curiosidades muy breves.`;
+        let fichaFinal = null;
 
-        const llamarGeminiStream = async (thinkingConfig) => {
-          const generationConfig = {
-            temperature: 0.4,
-            maxOutputTokens: 1500,
-            responseMimeType: "application/json"
-          };
+        // 1. Intento rápido con Gemini en texto plano ligero (máximo 16 segundos)
+        if (apiKey) {
+          const promptLigero = `Docente de 2º de Primaria (7-8 años). Explica "${promptUsuario}" en español muy sencillo y seguro para niños.
+Responde SOLO usando estas líneas exactas (sin saludos ni bloques de código):
+TITULO: nombre claro
+PAIS: país o países principales (o Todo el planeta)
+CONTINENTE: América del Norte | América del Sur | Europa | África | Asia | Oceanía | Antártida | Todo el mundo
+ETIQUETAS: palabra1, palabra2, palabra3
+IMAGEN: término corto para buscar foto en Wikipedia
+- oración corta 1
+- oración corta 2
+(escribe 8 oraciones muy fáciles sobre qué es, cómo es y dónde está)
+* curiosidad breve 1
+* curiosidad breve 2
+* curiosidad breve 3`;
 
-          if (thinkingConfig) {
-            generationConfig.thinkingConfig = thinkingConfig;
-          }
-
-          const payload = {
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: promptCompleto }]
-              }
-            ],
-            safetySettings: [
-              { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
-              { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
-              { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
-              { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
-            ],
-            generationConfig
-          };
-
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse&key=${encodeURIComponent(apiKey)}`;
           const abortCtrl = new AbortController();
-          const timeoutId = setTimeout(() => abortCtrl.abort(), 28000);
+          const timeoutId = setTimeout(() => abortCtrl.abort(), 16000);
 
           try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
             const response = await fetch(url, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
+              body: JSON.stringify({
+                contents: [{ role: "user", parts: [{ text: promptLigero }] }],
+                safetySettings: [
+                  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
+                  { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
+                  { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
+                  { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
+                ],
+                generationConfig: {
+                  temperature: 0.4,
+                  maxOutputTokens: 750,
+                  thinkingConfig: { thinkingLevel: "low" }
+                }
+              }),
               signal: abortCtrl.signal
             });
-
-            if (!response.ok) {
-              clearTimeout(timeoutId);
-              const errText = await response.text();
-              let errData = {};
-              try {
-                errData = JSON.parse(errText);
-              } catch (e) {
-                errData = { error: { message: `Error HTTP ${response.status}` } };
-              }
-              return { ok: false, status: response.status, data: errData };
-            }
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
-            let textoCompleto = "";
-            let finishReason = "";
-
-            const procesarLinea = (linea) => {
-              const trimmed = linea.trim();
-              if (!trimmed.startsWith("data:")) return;
-              const jsonStr = trimmed.slice(5).trim();
-              if (!jsonStr || jsonStr === "[DONE]") return;
-              try {
-                const chunk = JSON.parse(jsonStr);
-                const cand = chunk.candidates && chunk.candidates[0];
-                if (cand) {
-                  if (cand.finishReason) finishReason = cand.finishReason;
-                  const parts = cand.content?.parts || [];
-                  for (const p of parts) {
-                    if (!p.thought && typeof p.text === "string") {
-                      textoCompleto += p.text;
-                    }
-                  }
-                }
-              } catch (e) {
-                // Ignorar fragmentos parciales
-              }
-            };
-
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              buffer += decoder.decode(value, { stream: true });
-              const lineas = buffer.split("\n");
-              buffer = lineas.pop() || "";
-              for (const linea of lineas) {
-                procesarLinea(linea);
-              }
-            }
-
-            if (buffer.trim()) {
-              procesarLinea(buffer);
-            }
-
             clearTimeout(timeoutId);
-            return { ok: true, status: 200, texto: textoCompleto, finishReason };
-          } catch (err) {
+
+            if (response.ok) {
+              const data = await response.json();
+              const candidato = data.candidates && data.candidates[0];
+              if (candidato && candidato.finishReason === "SAFETY") {
+                clearInterval(keepAlive);
+                controller.enqueue(
+                  encoder.encode(
+                    JSON.stringify({
+                      error: "Esa búsqueda no es adecuada para clase. ¡Prueba con otro animal, lugar o invento!"
+                    })
+                  )
+                );
+                controller.close();
+                return;
+              }
+
+              const partes = candidato?.content?.parts || [];
+              const texto = partes
+                .filter((p) => !p.thought && typeof p.text === "string")
+                .map((p) => p.text)
+                .join("\n")
+                .trim();
+
+              if (texto) {
+                fichaFinal = parsearRespuestaGemini(texto);
+              }
+            }
+          } catch (e) {
             clearTimeout(timeoutId);
-            return {
-              ok: false,
-              status: 504,
-              data: { error: { message: "Google tardó más de 28 segundos en responder." } }
-            };
+            // Si Gemini tarda más de 16s, continúa al respaldo automático de Wikipedia
           }
-        };
+        }
 
-        let res = await llamarGeminiStream({ thinkingLevel: "low" });
-
-        if (!res.ok && res.status === 400) {
-          res = await llamarGeminiStream(null);
+        // 2. Respaldo automático en 0,3 segundos si Gemini tardó demasiado o agotó cuota
+        if (!fichaFinal) {
+          fichaFinal = await buscarEnWikipedia(promptUsuario);
         }
 
         clearInterval(keepAlive);
 
-        if (res.ok) {
-          if (res.finishReason === "SAFETY") {
-            controller.enqueue(
-              encoder.encode(
-                JSON.stringify({
-                  error: "Esa búsqueda no es adecuada para clase. ¡Prueba con otro animal, lugar o invento!"
-                })
-              )
-            );
-            controller.close();
-            return;
-          }
-
-          const texto = (res.texto || "")
-            .replace(/^```json\s*/i, "")
-            .replace(/```\s*$/i, "")
-            .trim();
-
-          if (!texto) {
-            controller.enqueue(
-              encoder.encode(
-                JSON.stringify({
-                  error: `Gemini devolvió la ficha vacía (motivo: ${res.finishReason || "desconocido"}).`
-                })
-              )
-            );
-            controller.close();
-            return;
-          }
-
-          let objetoFicha = {};
-          try {
-            objetoFicha = JSON.parse(texto);
-          } catch (e) {
-            objetoFicha = {
-              titulo: promptUsuario,
-              pais: "Todo el planeta",
-              continente: "Todo el mundo",
-              caracteristicas: ["2º de Primaria"],
-              oraciones: [texto],
-              curiosidades: ["¡Sigue explorando temas nuevos con tu clase!"],
-              busquedaImagen: promptUsuario
-            };
-          }
-
+        if (fichaFinal) {
           controller.enqueue(
             encoder.encode(
               JSON.stringify({
-                ...objetoFicha,
-                resultado: objetoFicha
+                ...fichaFinal,
+                resultado: fichaFinal
               })
             )
           );
@@ -249,11 +288,10 @@ Reglas: 8 a 10 oraciones cortas (máximo 12 palabras cada una) sobre qué es, c�
           return;
         }
 
-        const mensajeError = res.data?.error?.message || `Error HTTP ${res.status}`;
         controller.enqueue(
           encoder.encode(
             JSON.stringify({
-              error: `Google rechazó la consulta (${res.status}): ${mensajeError}`
+              error: "No encontramos información sobre ese tema. Prueba a escribirlo de otra forma o usa los ejemplos rápidos."
             })
           )
         );
@@ -263,7 +301,7 @@ Reglas: 8 a 10 oraciones cortas (máximo 12 palabras cada una) sobre qué es, c�
         controller.enqueue(
           encoder.encode(
             JSON.stringify({
-              error: `Error interno en el servidor: ${err.message}`
+              error: `Error en el servidor: ${err.message}`
             })
           )
         );
